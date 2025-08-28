@@ -2,6 +2,9 @@ spring:
   application:
     name: msvc-classes
 
+server:
+  port: ${MSVC_CLASSES_PORT:9094}
+
 
 springdoc:
   api-docs:
