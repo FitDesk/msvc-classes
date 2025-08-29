@@ -1,4 +1,4 @@
-name: Docker Build & Push
+name: Build and deploy container app to Azure Web App - msvc-classes
 
 on:
   workflow_dispatch:
@@ -23,5 +23,21 @@ jobs:
         with:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/fitdesk-msvc-classes:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fitdesk-msvc-classes:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fitdesk-msvc-classes:buildcache,mode=max
+          file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'msvc-classes'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_d14b6ca78e224993a29d17523f06debe }}
+        images: "${{ secrets.DOCKERHUB_USERNAME }}/fitdesk-msvc-classes:latest"
