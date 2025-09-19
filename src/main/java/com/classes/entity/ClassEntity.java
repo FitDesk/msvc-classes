@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "classes", indexes = {@Index(columnList="start_time"), @Index(columnList="trainer_id")})
+// @Table(name = "classes", indexes = {@Index(columnList="start_time"), @Index(columnList="trainer_id")})
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClassEntity {
