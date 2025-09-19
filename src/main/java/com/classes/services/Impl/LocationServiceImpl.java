@@ -1,42 +1,53 @@
 package com.classes.services.Impl;
 
-import com.classes.DTOs.LocationDTO;
-import com.classes.entity.Location;
+import com.classes.dtos.LocationDTO;
+import com.classes.entities.LocationEntity;
 import com.classes.mappers.LocationMapper;
-import com.classes.repository.LocationRepository;
+import com.classes.repositories.LocationRepository;
 import com.classes.services.LocationService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository repository;
     private final LocationMapper mapper;
 
     @Override
+    @Transactional
     public LocationDTO create(LocationDTO dto) {
-        Location location = mapper.toEntity(dto);
-        return mapper.toDto(repository.save(location));
+        LocationEntity locationEntity = mapper.toEntity(dto);
+        return mapper.toDto(repository.save(locationEntity));
     }
+
     @Override
+    @Transactional
     public LocationDTO update(Long id, LocationDTO dto) {
-        Location location= findById(id);
-        mapper.updateFromDto(dto, location);
-        Location updated = repository.save(location);
+        LocationEntity locationEntity = findById(id);
+        mapper.updateFromDto(dto, locationEntity);
+        LocationEntity updated = repository.save(locationEntity);
         return mapper.toDto(updated);
     }
+
     @Override
-    public Location findById(Long id) {
+    @Transactional(readOnly = true)
+    public LocationEntity findById(Long id) {
         return repository.findById(id).orElseThrow(() -> new RuntimeException("Location not found"));
     }
+
     @Override
-    public List<Location> FindAll() {
+    @Transactional(readOnly = true)
+    public List<LocationEntity> FindAll() {
         return repository.findAll();
     }
+
+    @Transactional
     @Override
     public void delete(Long id) {
         repository.deleteById(id);

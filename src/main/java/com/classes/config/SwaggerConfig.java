@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.servers.Server;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "",
-                description = "",
+                title = "Microservicio para el manejo de las clases y horarios",
+                description = "Manejo de horarios , clases",
                 termsOfService = "",
                 version = "1.0.0",
                 contact = @Contact(

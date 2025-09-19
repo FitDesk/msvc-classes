@@ -1,16 +1,19 @@
-package com.classes.entity;
+package com.classes.entities;
 
+import com.classes.config.Audit;
+import com.classes.config.AuditListener;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
 @Entity
-// @Table(name = "classes", indexes = {@Index(columnList="start_time"), @Index(columnList="trainer_id")})
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Data
+@Table(name = "classes")
+@EntityListeners(AuditListener.class)
 public class ClassEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,6 +25,6 @@ public class ClassEntity {
     private UUID trainerId;
     @Column(name = "max_capacity")
     private Integer maxCapacity;
-//    @Enumerated(EnumType.STRING)
-//    private ClassStatus status; // SCHEDULED,CANCELLED,COMPLETED
+    @Embedded
+    private Audit audit;
 }
