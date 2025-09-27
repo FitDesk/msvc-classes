@@ -5,11 +5,13 @@ import com.classes.dtos.LocationDTO;
 import com.classes.entities.LocationEntity;
 import com.classes.services.LocationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/locations")
@@ -25,24 +27,22 @@ public class LocationController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<LocationDTO> update(@PathVariable Long id, @RequestBody LocationDTO dto) {
-        LocationDTO updated = locationService.update(id, dto);
-        return ResponseEntity.ok(updated);
-    }
-
     @GetMapping
-    public ResponseEntity<List<LocationEntity>> findAll() {
-        return ResponseEntity.ok(locationService.FindAll());
+    public ResponseEntity<Page<LocationDTO>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<LocationDTO> locations = locationService.findAll(page, size);
+        return ResponseEntity.ok(locations);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LocationEntity> findById(@PathVariable Long id) {
+    public ResponseEntity<LocationEntity> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(locationService.findById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         locationService.delete(id);
         return ResponseEntity.noContent().build();
     }
