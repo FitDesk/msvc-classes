@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.servers.Server;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "",
-                description = "",
+                title = "Microservicio para el manejo de las clases y horarios",
+                description = "Manejo de horarios , clases",
                 termsOfService = "",
                 version = "1.0.0",
                 contact = @Contact(
@@ -26,26 +26,13 @@ import io.swagger.v3.oas.annotations.servers.Server;
         servers = {
                 @Server(
                         description = "Local Server",
-                        url = "http://localhost:9002"
+                        url = "http://localhost:9094"
                 ),
                 @Server(
                         description = "Production Server",
                         url = "https://"
                 )
         }
-//        ,
-//        security = @SecurityRequirement(
-//                name = "securityToken"
-//        )
-//)
-//@SecurityScheme(
-//        name = "securityToken",
-//        description = "Access Token For My API",
-//        type = SecuritySchemeType.HTTP,
-//        paramName = HttpHeaders.AUTHORIZATION,
-//        in = SecuritySchemeIn.HEADER,
-//        scheme = "bearer",
-//        bearerFormat = "JWT"
 )
 public class SwaggerConfig {
 }
