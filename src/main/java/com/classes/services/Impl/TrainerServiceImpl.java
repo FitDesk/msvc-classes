@@ -4,11 +4,13 @@ import com.classes.dtos.FileResponseDTO;
 import com.classes.dtos.TrainerDTO;
 import com.classes.entities.TrainerEntity;
 import com.classes.mappers.TrainerMapper;
+import com.classes.repositories.ClassRepository;
 import com.classes.repositories.TrainerRepository;
 import com.classes.services.AzureService;
 import com.classes.services.CloudinaryService;
 import com.classes.services.TrainerService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +28,9 @@ public class TrainerServiceImpl implements TrainerService {
     private final TrainerMapper trainerMapper;
     private final CloudinaryService cloudinaryService;
     private final AzureService azureStorageService;
+    private final ClassRepository classRepository;
 
+    @Transactional
     @Override
     public TrainerDTO createTrainer(TrainerDTO trainerDTO,
                                     MultipartFile profileImage,
@@ -49,6 +53,7 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerMapper.toDTO(savedTrainer);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public TrainerDTO getTrainerById(UUID id) {
         TrainerEntity trainer = trainerRepository.findById(id)
@@ -56,11 +61,13 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerMapper.toDTO(trainer);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<TrainerDTO> getAllTrainers() {
         return trainerMapper.toDTOList(trainerRepository.findAll());
     }
 
+    @Transactional
     @Override
     public TrainerDTO updateTrainer(UUID id,
                                     TrainerDTO trainerDTO,
@@ -86,10 +93,18 @@ public class TrainerServiceImpl implements TrainerService {
         TrainerEntity updated = trainerRepository.save(trainer);
         return trainerMapper.toDTO(updated);
     }
+    @Transactional
     @Override
     public void deleteTrainer(UUID id) throws IOException {
         TrainerEntity trainer = trainerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Trainer not found with id: " + id));
+
+        boolean hasClasses = classRepository.findFirstByTrainerId(id).isPresent();
+        if (hasClasses) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar el trainer porque tiene clases asignadas"
+            );
+        }
         if (trainer.getProfileImageUrl() != null) {
             cloudinaryService.delete(trainer.getProfileImageUrl());
         }

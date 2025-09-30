@@ -3,6 +3,7 @@ package com.classes.services.Impl;
 import com.classes.dtos.LocationDTO;
 import com.classes.entities.LocationEntity;
 import com.classes.mappers.LocationMapper;
+import com.classes.repositories.ClassRepository;
 import com.classes.repositories.LocationRepository;
 import com.classes.services.LocationService;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository repository;
     private final LocationMapper mapper;
+    private final ClassRepository classRepository;
 
     @Override
     @Transactional
@@ -51,8 +53,15 @@ public class LocationServiceImpl implements LocationService {
     @Transactional
     @Override
     public void delete(UUID id) {
+        boolean hasClasses = classRepository.findFirstByLocationId(id).isPresent();
+        if (hasClasses) {
+            throw new IllegalArgumentException(
+                    "No se puede eliminar porque hay clases asociadas con este ID"
+            );
+        }
         repository.deleteById(id);
     }
+
 
     @Transactional(readOnly = true)
     public Page<LocationDTO> findAll(int page, int size) {

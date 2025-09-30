@@ -18,7 +18,7 @@ public class TrainerDTO {
     private String lastName;
     private String dni;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthDate;
 
     private Gender gender;
@@ -32,7 +32,7 @@ public class TrainerDTO {
     private List<String> certifications;
     private Set<DayAvailability> availability;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate hireDate;
 
     private TrainerStatus status;
