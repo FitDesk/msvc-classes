@@ -8,11 +8,13 @@ import com.azure.storage.common.StorageSharedKeyCredential;
 import com.classes.dtos.FileResponseDTO;
 import com.classes.services.AzureService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.UUID;
 
+@Service
 public class AzureServiceImpl implements AzureService {
     private final BlobContainerClient containerClient;
 
