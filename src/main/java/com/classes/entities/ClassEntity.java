@@ -21,7 +21,7 @@ public class ClassEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String name;
-    private UUID LocationId;
+//    private UUID LocationId;
     private String className;
     private int duration;
     private UUID trainerId;
@@ -29,6 +29,9 @@ public class ClassEntity {
     private LocalTime startTime;
     private boolean active;
     private String description;
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private LocationEntity location;
 
     @Embedded
     private Audit audit;

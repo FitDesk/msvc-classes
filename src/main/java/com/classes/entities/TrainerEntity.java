@@ -1,9 +1,9 @@
 package com.classes.entities;
 
-import com.classes.Enums.ContractType;
-import com.classes.Enums.DayAvailability;
-import com.classes.Enums.Gender;
-import com.classes.Enums.TrainerStatus;
+import com.classes.enums.ContractType;
+import com.classes.enums.DayAvailability;
+import com.classes.enums.Gender;
+import com.classes.enums.TrainerStatus;
 import com.classes.config.Audit;
 import com.classes.config.AuditListener;
 import jakarta.persistence.*;

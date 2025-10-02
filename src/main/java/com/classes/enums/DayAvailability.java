@@ -1,4 +1,4 @@
-package com.classes.Enums;
+package com.classes.enums;
 
 
 public enum DayAvailability {
