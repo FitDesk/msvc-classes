@@ -10,11 +10,11 @@
         <version>3.5.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.members</groupId>
-    <artifactId>msvc-members</artifactId>
+    <groupId>com.classes</groupId>
+    <artifactId>msvc-classes</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>msvc-members</name>
-    <description>msvc-members</description>
+    <name>msvc-classes</name>
+    <description>msvc-classes</description>
     <url/>
     <licenses>
         <license/>
