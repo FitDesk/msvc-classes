@@ -41,3 +41,4 @@ jobs:
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_d14b6ca78e224993a29d17523f06debe }}
         images: "${{ secrets.DOCKERHUB_USERNAME }}/fitdesk-msvc-classes:latest"
+      
