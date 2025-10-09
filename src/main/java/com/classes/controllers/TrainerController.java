@@ -3,20 +3,19 @@ package com.classes.controllers;
 import com.classes.annotations.AdminAccess;
 import com.classes.annotations.AdminOrTrainerAccess;
 import com.classes.dtos.TrainerDTO;
+import com.classes.services.Impl.AuthServiceImpl;
 import com.classes.services.TrainerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,9 +28,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/trainers")
 @RequiredArgsConstructor
+@Slf4j
 public class TrainerController {
 
     private final TrainerService trainerService;
+    private final AuthServiceImpl authService;
+
 
     @AdminAccess
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -92,5 +94,31 @@ public class TrainerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/my-trainer")
+    @AdminOrTrainerAccess
+    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<TrainerDTO> getMyTrainer(Authentication authentication) {
+        UUID userId = authService.getUserId(authentication);
+        TrainerDTO trainer = trainerService.getTrainerByUserId(userId);
+        return trainer != null ? ResponseEntity.ok(trainer) : ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/has-trainer")
+    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @AdminOrTrainerAccess
+    public ResponseEntity<Boolean> hasTrainer(Authentication authentication) {
+        UUID userId = authService.getUserId(authentication);
+        return ResponseEntity.ok(trainerService.existsByUserId(userId));
+    }
+
+    @GetMapping("/user/{userId}")
+    //@PreAuthorize("hasRole('ADMIN')")
+    @AdminAccess
+    public ResponseEntity<TrainerDTO> getUserTrainer(@PathVariable UUID userId) {
+        TrainerDTO trainer = trainerService.getTrainerByUserId(userId);
+        return trainer != null ? ResponseEntity.ok(trainer) : ResponseEntity.noContent().build();
+    }
 }
+
 

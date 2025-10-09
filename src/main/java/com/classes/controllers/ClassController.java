@@ -1,6 +1,7 @@
 package com.classes.controllers;
 
-import com.classes.dtos.ClassDTO;
+import com.classes.dtos.Class.ClassRequest;
+import com.classes.dtos.Class.ClassResponse;
 import com.classes.services.ClassService;
 import org.springframework.web.bind.annotation.PostMapping;
 import lombok.RequiredArgsConstructor;
@@ -19,21 +20,23 @@ public class ClassController {
     private final ClassService classService;
 
 
+
     @PostMapping
-    public ResponseEntity<ClassDTO> createClass(@RequestBody ClassDTO dto) {
-        ClassDTO created = classService.createClass(dto);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<ClassResponse> createClass(@RequestBody ClassRequest request) {
+        ClassResponse created = classService.createClass(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
-    public ResponseEntity<List<ClassDTO>> findAllClasses() {
-        List<ClassDTO> list = classService.findAll();
+    public ResponseEntity<List<ClassResponse>> findAllClasses() {
+        List<ClassResponse> list = classService.findAll();
         return ResponseEntity.ok(list);
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<ClassDTO> updateClass(@PathVariable UUID id, @RequestBody ClassDTO dto) {
-        ClassDTO updated = classService.updateClass(id, dto);
+    public ResponseEntity<ClassResponse> updateClass(@PathVariable UUID id, @RequestBody ClassRequest request) {
+        ClassResponse updated = classService.updateClass(id, request);
         return ResponseEntity.ok(updated);
     }
 

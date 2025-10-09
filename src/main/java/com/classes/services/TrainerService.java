@@ -22,5 +22,9 @@ public interface TrainerService {
                              List<MultipartFile> certifications) throws IOException;
 
     void deleteTrainer(UUID id) throws IOException;
+
+    TrainerDTO getTrainerByUserId(UUID userId);
+
+    boolean existsByUserId(UUID userId);
 }
 

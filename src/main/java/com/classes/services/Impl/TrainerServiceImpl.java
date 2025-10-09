@@ -116,4 +116,17 @@ public class TrainerServiceImpl implements TrainerService {
         }
         trainerRepository.delete(trainer);
     }
+
+    @Override
+    public TrainerDTO getTrainerByUserId(UUID userId) {
+        return trainerRepository.findByUserId(userId)
+                .map(trainerMapper::toDTO)
+                .orElse(null); // null si no tiene trainer
+    }
+
+    @Override
+    public boolean existsByUserId(UUID userId) {
+        return trainerRepository.existsByUserId(userId);
+    }
+
 }
