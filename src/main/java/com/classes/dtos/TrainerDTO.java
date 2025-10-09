@@ -1,9 +1,9 @@
 package com.classes.dtos;
 
-import com.classes.Enums.ContractType;
-import com.classes.Enums.DayAvailability;
-import com.classes.Enums.Gender;
-import com.classes.Enums.TrainerStatus;
+import com.classes.enums.ContractType;
+import com.classes.enums.DayAvailability;
+import com.classes.enums.Gender;
+import com.classes.enums.TrainerStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -18,7 +18,7 @@ public class TrainerDTO {
     private String lastName;
     private String dni;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate birthDate;
 
     private Gender gender;
@@ -32,7 +32,7 @@ public class TrainerDTO {
     private List<String> certifications;
     private Set<DayAvailability> availability;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate hireDate;
 
     private TrainerStatus status;

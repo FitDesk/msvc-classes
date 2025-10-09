@@ -1,5 +1,7 @@
 package com.classes.controllers;
 
+import com.classes.annotations.AdminAccess;
+import com.classes.annotations.AdminOrTrainerAccess;
 import com.classes.dtos.TrainerDTO;
 import com.classes.services.TrainerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +33,7 @@ public class TrainerController {
 
     private final TrainerService trainerService;
 
+    @AdminAccess
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> createTrainer(
             @RequestParam("trainer") String trainerJson,
@@ -40,18 +48,21 @@ public class TrainerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTrainer);
     }
 
+    @PreAuthorize("@authService.canAccessResource(#id, authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<TrainerDTO> getTrainerById(@PathVariable UUID id) {
         TrainerDTO trainer = trainerService.getTrainerById(id);
         return ResponseEntity.ok(trainer);
     }
 
+    @AdminAccess
     @GetMapping
     public ResponseEntity<List<TrainerDTO>> getAllTrainers() {
         List<TrainerDTO> trainers = trainerService.getAllTrainers();
         return ResponseEntity.ok(trainers);
     }
 
+    @PreAuthorize("@authService.canAccessResource(#ownerId, authentication)")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> updateTrainer(
             @PathVariable UUID id,
@@ -67,14 +78,17 @@ public class TrainerController {
         return ResponseEntity.ok(updatedTrainer);
     }
 
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrainer(@PathVariable UUID id) {
         try {
             trainerService.deleteTrainer(id);
             return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException e) {
+        } catch (
+                EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
