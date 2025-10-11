@@ -1,4 +1,4 @@
-package com.classes.dtos;
+package com.classes.dtos.Trainer;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

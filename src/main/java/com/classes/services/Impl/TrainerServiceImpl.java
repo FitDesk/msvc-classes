@@ -1,7 +1,7 @@
 package com.classes.services.Impl;
 
-import com.classes.dtos.FileResponseDTO;
-import com.classes.dtos.TrainerDTO;
+import com.classes.dtos.Trainer.FileResponseDTO;
+import com.classes.dtos.Trainer.TrainerDTO;
 import com.classes.entities.TrainerEntity;
 import com.classes.mappers.TrainerMapper;
 import com.classes.repositories.ClassRepository;

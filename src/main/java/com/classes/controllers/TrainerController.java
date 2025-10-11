@@ -1,22 +1,19 @@
 package com.classes.controllers;
 
-import com.classes.annotations.AdminAccess;
-import com.classes.annotations.AdminOrTrainerAccess;
-import com.classes.dtos.TrainerDTO;
+import com.classes.dtos.Trainer.TrainerDTO;
+import com.classes.services.AuthorizationService;
 import com.classes.services.TrainerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,13 +26,17 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/trainers")
 @RequiredArgsConstructor
+@Slf4j
 public class TrainerController {
 
     private final TrainerService trainerService;
+    private final AuthorizationService authService;
 
-    @AdminAccess
+/*probado*/
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> createTrainer(
+            Authentication authentication,
             @RequestParam("trainer") String trainerJson,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             @RequestParam(value = "certifications", required = false) List<MultipartFile> certifications
@@ -47,22 +48,23 @@ public class TrainerController {
         TrainerDTO createdTrainer = trainerService.createTrainer(trainerDTO, profileImage, certifications);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTrainer);
     }
-
-    @PreAuthorize("@authService.canAccessResource(#id, authentication)")
+    /*probado*/
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<TrainerDTO> getTrainerById(@PathVariable UUID id) {
         TrainerDTO trainer = trainerService.getTrainerById(id);
         return ResponseEntity.ok(trainer);
     }
 
-    @AdminAccess
+    //probado
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @GetMapping
     public ResponseEntity<List<TrainerDTO>> getAllTrainers() {
         List<TrainerDTO> trainers = trainerService.getAllTrainers();
         return ResponseEntity.ok(trainers);
     }
 
-    @PreAuthorize("@authService.canAccessResource(#ownerId, authentication)")
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id, authentication)")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> updateTrainer(
             @PathVariable UUID id,
@@ -79,6 +81,7 @@ public class TrainerController {
     }
 
 
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrainer(@PathVariable UUID id) {
         try {
@@ -93,4 +96,5 @@ public class TrainerController {
         }
     }
 }
+
 

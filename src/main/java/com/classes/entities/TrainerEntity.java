@@ -65,6 +65,7 @@ public class TrainerEntity {
     private BigDecimal salaryPerClass;
     private String bankInfo;
     private String notes;
+
     @Embedded
     private Audit audit;
 
