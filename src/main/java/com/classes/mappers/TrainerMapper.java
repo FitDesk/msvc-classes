@@ -1,7 +1,7 @@
 package com.classes.mappers;
 
 import com.classes.config.MapStructConfig;
-import com.classes.dtos.TrainerDTO;
+import com.classes.dtos.Trainer.TrainerDTO;
 import com.classes.entities.TrainerEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

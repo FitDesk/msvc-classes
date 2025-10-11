@@ -1,6 +1,6 @@
 package com.classes.services.Impl;
 
-import com.classes.dtos.FileResponseDTO;
+import com.classes.dtos.Trainer.FileResponseDTO;
 import com.classes.services.CloudinaryService;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

@@ -1,7 +1,8 @@
 package com.classes.mappers;
 
 
-import com.classes.dtos.LocationDTO;
+import com.classes.dtos.Location.LocationRequest;
+import com.classes.dtos.Location.LocationResponse;
 import com.classes.config.MapStructConfig;
 import com.classes.entities.LocationEntity;
 import org.mapstruct.BeanMapping;
@@ -12,11 +13,14 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(config = MapStructConfig.class)
 public interface LocationMapper {
 
-    LocationDTO toDto(LocationEntity locationEntity);
-    LocationEntity toEntity(LocationDTO locationDTO);
+    LocationResponse toResponse(LocationEntity locationEntity);
 
+    // Request → Entity
+    LocationEntity toEntity(LocationRequest locationRequest);
+
+    // Actualización parcial: Request → Entity
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateFromDto(LocationDTO dto, @MappingTarget LocationEntity entity);
+    void updateFromRequest(LocationRequest request, @MappingTarget LocationEntity entity);
 
 
 }

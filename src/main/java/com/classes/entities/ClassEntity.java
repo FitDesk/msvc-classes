@@ -5,6 +5,8 @@ import com.classes.config.AuditListener;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
@@ -18,13 +20,24 @@ public class ClassEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String title;
-    @Column(length = 2000)
+    private String name;
+
+    private String className;
+    private int duration;
+
+    private int maxCapacity;
+    private LocalTime startTime;
+    private boolean active;
     private String description;
-    @Column(name = "trainer_id")
-    private UUID trainerId;
-    @Column(name = "max_capacity")
-    private Integer maxCapacity;
+
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private LocationEntity location;
+
+    @ManyToOne
+    @JoinColumn(name = "trainer_id")
+    private TrainerEntity trainer;
+
     @Embedded
     private Audit audit;
 }

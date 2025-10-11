@@ -1,5 +1,6 @@
 package com.classes.exceptions;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -7,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 //import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -108,19 +110,28 @@ public class GlobalExceptionController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-//        ErrorResponse errorResponse = new ErrorResponse(
-//                "ACCESS_DENIED",
-//                "Acceso denegado",
-//                Collections.singletonList("No tienes los permisos necesarios para realizar esta acción")
-//        );
-//
-//        log.warn("Access denied for user");
-//        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-//    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "ACCESS_DENIED",
+                "Acceso denegado",
+                Collections.singletonList("No tienes los permisos necesarios para realizar esta acción")
+        );
+
+        log.warn("Access denied for user");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
 
 
-
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "ENTITY_NOT_FOUND",
+                "No se encontró la entidad solicitada",
+                List.of(ex.getMessage())
+        );
+        log.warn("Entity not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
 
 }
