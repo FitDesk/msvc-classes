@@ -66,10 +66,6 @@ public class TrainerEntity {
     private String bankInfo;
     private String notes;
 
-    @Column(name = "user_id")
-    private UUID userId;
-
-
     @Embedded
     private Audit audit;
 

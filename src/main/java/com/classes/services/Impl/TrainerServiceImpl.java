@@ -1,7 +1,7 @@
 package com.classes.services.Impl;
 
-import com.classes.dtos.FileResponseDTO;
-import com.classes.dtos.TrainerDTO;
+import com.classes.dtos.Trainer.FileResponseDTO;
+import com.classes.dtos.Trainer.TrainerDTO;
 import com.classes.entities.TrainerEntity;
 import com.classes.mappers.TrainerMapper;
 import com.classes.repositories.ClassRepository;
@@ -116,17 +116,4 @@ public class TrainerServiceImpl implements TrainerService {
         }
         trainerRepository.delete(trainer);
     }
-
-    @Override
-    public TrainerDTO getTrainerByUserId(UUID userId) {
-        return trainerRepository.findByUserId(userId)
-                .map(trainerMapper::toDTO)
-                .orElse(null); // null si no tiene trainer
-    }
-
-    @Override
-    public boolean existsByUserId(UUID userId) {
-        return trainerRepository.existsByUserId(userId);
-    }
-
 }

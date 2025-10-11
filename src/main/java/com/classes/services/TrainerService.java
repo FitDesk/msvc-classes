@@ -1,6 +1,6 @@
 package com.classes.services;
 
-import com.classes.dtos.TrainerDTO;
+import com.classes.dtos.Trainer.TrainerDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,8 +23,8 @@ public interface TrainerService {
 
     void deleteTrainer(UUID id) throws IOException;
 
-    TrainerDTO getTrainerByUserId(UUID userId);
 
-    boolean existsByUserId(UUID userId);
+
+
 }
 

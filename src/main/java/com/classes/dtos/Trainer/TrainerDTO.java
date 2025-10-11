@@ -1,4 +1,4 @@
-package com.classes.dtos;
+package com.classes.dtos.Trainer;
 
 import com.classes.enums.ContractType;
 import com.classes.enums.DayAvailability;

@@ -10,8 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface TrainerRepository extends JpaRepository<TrainerEntity, UUID> {
-    Optional<TrainerEntity> findByUserId(UUID userId);
 
-    // Verificar si existe trainer por userId
-    boolean existsByUserId(UUID userId);
+
+
 }

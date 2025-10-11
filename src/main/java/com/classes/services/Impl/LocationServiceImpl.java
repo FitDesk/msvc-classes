@@ -1,21 +1,18 @@
 package com.classes.services.Impl;
 
-import com.classes.dtos.LocationDTO;
+import com.classes.dtos.Location.LocationRequest;
+import com.classes.dtos.Location.LocationResponse;
 import com.classes.entities.LocationEntity;
 import com.classes.mappers.LocationMapper;
 import com.classes.repositories.ClassRepository;
 import com.classes.repositories.LocationRepository;
 import com.classes.services.LocationService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,30 +25,24 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @Transactional
-    public LocationDTO create(LocationDTO dto) {
-        LocationEntity locationEntity = mapper.toEntity(dto);
-        return mapper.toDto(repository.save(locationEntity));
+    public LocationResponse create(LocationRequest request) {
+        LocationEntity entity = mapper.toEntity(request);
+        LocationEntity saved = repository.save(entity);
+        return mapper.toResponse(saved);
     }
 
     @Override
     @Transactional
-    public LocationDTO update(UUID id, LocationDTO dto) {
-        LocationEntity locationEntity = findById(id);
-        mapper.updateFromDto(dto, locationEntity);
-        LocationEntity updated = repository.save(locationEntity);
-        return mapper.toDto(updated);
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public LocationEntity findById(UUID id) {
-        return repository.findById(id)
+    public LocationResponse update(UUID id, LocationRequest request) {
+        LocationEntity entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Location not found"));
+        mapper.updateFromRequest(request, entity);
+        LocationEntity updated = repository.save(entity);
+        return mapper.toResponse(updated);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void delete(UUID id) {
         boolean hasClasses = classRepository.findFirstByLocationId(id).isPresent();
         if (hasClasses) {
@@ -62,12 +53,30 @@ public class LocationServiceImpl implements LocationService {
         repository.deleteById(id);
     }
 
-
-    @Transactional(readOnly = true)
-    public Page<LocationDTO> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<LocationEntity> pageEntity = repository.findAll(pageable);
-        return pageEntity.map(mapper::toDto);
+    @Override
+    public LocationResponse findById(UUID id) {
+        LocationEntity entity = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+        return mapper.toResponse(entity);
     }
 
+    @Override
+    public Page<LocationResponse> findAll(int page, int size, String search, Boolean active) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<LocationEntity> pageResult;
+
+        if (search != null && !search.isEmpty() && active != null) {
+            pageResult = repository.findByNameContainingIgnoreCaseAndActive(search, active, pageable);
+        } else if (search != null && !search.isEmpty()) {
+            pageResult = repository.findByNameContainingIgnoreCase(search, pageable);
+        } else if (active != null) {
+            pageResult = active ? repository.findByActiveTrue(pageable)
+                    : repository.findByActiveFalse(pageable);
+        } else {
+            pageResult = repository.findAll(pageable);
+        }
+
+        return pageResult.map(mapper::toResponse);
+    }
 }
+

@@ -14,7 +14,14 @@ import java.util.List;
 public interface ClassMapper {
 
     // Crear entidad desde el request
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "location", ignore = true) // se setean en el servicio
+    @Mapping(target = "trainer", ignore = true)
     ClassEntity toEntity(ClassRequest request);
+
+    @Mapping(target = "locationName", source = "location.name")
+    @Mapping(target = "trainerName", source = "trainer.firstName")
     ClassResponse toResponse(ClassEntity entity);
 
     // Lista de respuestas

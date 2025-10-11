@@ -52,16 +52,24 @@ public class ClassServiceImpl implements ClassService {
     @Transactional
     @Override
     public ClassResponse updateClass(UUID id, ClassRequest request) {
+
         ClassEntity existing = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("La clase con ID " + id + " no existe"));
-        validateTrainerAndLocation(request);
+
+
+        if (request.getTrainerId() != null) {
+            TrainerEntity trainer = trainerRepository.findById(request.getTrainerId())
+                    .orElseThrow(() -> new IllegalArgumentException("El trainer con ID " + request.getTrainerId() + " no existe"));
+            existing.setTrainer(trainer);
+        }
+
+
+        if (request.getLocationId() != null) {
+            LocationEntity location = locationRepository.findById(request.getLocationId())
+                    .orElseThrow(() -> new IllegalArgumentException("La ubicación con ID " + request.getLocationId() + " no existe"));
+            existing.setLocation(location);
+        }
         classMapper.updateFromRequest(request, existing);
-        TrainerEntity trainer = trainerRepository.findById(request.getTrainerId())
-                .orElseThrow(() -> new IllegalArgumentException("El trainer con ID " + request.getTrainerId() + " no existe"));
-        LocationEntity location = locationRepository.findById(request.getLocationId())
-                .orElseThrow(() -> new IllegalArgumentException("La ubicación con ID " + request.getLocationId() + " no existe"));
-        existing.setTrainer(trainer);
-        existing.setLocation(location);
         ClassEntity updated = repository.save(existing);
         return classMapper.toResponse(updated);
     }

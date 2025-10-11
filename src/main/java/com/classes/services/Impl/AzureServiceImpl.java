@@ -5,7 +5,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
-import com.classes.dtos.FileResponseDTO;
+import com.classes.dtos.Trainer.FileResponseDTO;
 import com.classes.services.AzureService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

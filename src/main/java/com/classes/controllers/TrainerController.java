@@ -1,9 +1,7 @@
 package com.classes.controllers;
 
-import com.classes.annotations.AdminAccess;
-import com.classes.annotations.AdminOrTrainerAccess;
-import com.classes.dtos.TrainerDTO;
-import com.classes.services.Impl.AuthServiceImpl;
+import com.classes.dtos.Trainer.TrainerDTO;
+import com.classes.services.AuthorizationService;
 import com.classes.services.TrainerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,12 +30,13 @@ import java.util.UUID;
 public class TrainerController {
 
     private final TrainerService trainerService;
-    private final AuthServiceImpl authService;
+    private final AuthorizationService authService;
 
-
-    @AdminAccess
+/*probado*/
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> createTrainer(
+            Authentication authentication,
             @RequestParam("trainer") String trainerJson,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             @RequestParam(value = "certifications", required = false) List<MultipartFile> certifications
@@ -49,22 +48,23 @@ public class TrainerController {
         TrainerDTO createdTrainer = trainerService.createTrainer(trainerDTO, profileImage, certifications);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTrainer);
     }
-
-    @PreAuthorize("@authService.canAccessResource(#id, authentication)")
+    /*probado*/
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<TrainerDTO> getTrainerById(@PathVariable UUID id) {
         TrainerDTO trainer = trainerService.getTrainerById(id);
         return ResponseEntity.ok(trainer);
     }
 
-    @AdminAccess
+    //probado
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @GetMapping
     public ResponseEntity<List<TrainerDTO>> getAllTrainers() {
         List<TrainerDTO> trainers = trainerService.getAllTrainers();
         return ResponseEntity.ok(trainers);
     }
 
-    @PreAuthorize("@authService.canAccessResource(#ownerId, authentication)")
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id, authentication)")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TrainerDTO> updateTrainer(
             @PathVariable UUID id,
@@ -81,6 +81,7 @@ public class TrainerController {
     }
 
 
+    @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrainer(@PathVariable UUID id) {
         try {
@@ -93,31 +94,6 @@ public class TrainerController {
                 IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    @GetMapping("/my-trainer")
-    @AdminOrTrainerAccess
-    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<TrainerDTO> getMyTrainer(Authentication authentication) {
-        UUID userId = authService.getUserId(authentication);
-        TrainerDTO trainer = trainerService.getTrainerByUserId(userId);
-        return trainer != null ? ResponseEntity.ok(trainer) : ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/has-trainer")
-    //@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @AdminOrTrainerAccess
-    public ResponseEntity<Boolean> hasTrainer(Authentication authentication) {
-        UUID userId = authService.getUserId(authentication);
-        return ResponseEntity.ok(trainerService.existsByUserId(userId));
-    }
-
-    @GetMapping("/user/{userId}")
-    //@PreAuthorize("hasRole('ADMIN')")
-    @AdminAccess
-    public ResponseEntity<TrainerDTO> getUserTrainer(@PathVariable UUID userId) {
-        TrainerDTO trainer = trainerService.getTrainerByUserId(userId);
-        return trainer != null ? ResponseEntity.ok(trainer) : ResponseEntity.noContent().build();
     }
 }
 
