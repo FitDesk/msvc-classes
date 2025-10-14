@@ -22,6 +22,7 @@ public interface ClassMapper {
 
     @Mapping(target = "locationName", source = "location.name")
     @Mapping(target = "trainerName", source = "trainer.firstName")
+    @Mapping(target = "schedule", expression = "java(entity.getStartTime() + \" - \" + entity.getEndTime())")
     ClassResponse toResponse(ClassEntity entity);
 
     // Lista de respuestas
