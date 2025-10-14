@@ -22,7 +22,7 @@ public class ClassResponse {
     private LocalDate classDate;
     private int duration;
     private int maxCapacity;
-    private LocalTime startTime;
+    private String schedule;
     private boolean active;
     private String description;
 }
