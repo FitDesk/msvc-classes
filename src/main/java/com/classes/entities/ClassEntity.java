@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,8 +22,6 @@ public class ClassEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String name;
-
     private String className;
     private int duration;
 
@@ -38,6 +38,11 @@ public class ClassEntity {
     @ManyToOne
     @JoinColumn(name = "trainer_id")
     private TrainerEntity trainer;
+
+    @OneToMany(mappedBy = "classEntity", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ClassReservation> reservations = new ArrayList<>();
+
 
     @Embedded
     private Audit audit;
