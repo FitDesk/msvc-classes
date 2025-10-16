@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/reservations")
 @RequiredArgsConstructor
 @Slf4j
 public class ClassReservationController {
 
     private final ClassReservationService reservationService;
-    private final AuthorizationService authorizationService; // Para obtener userId desde el token/cookie
+    private final AuthorizationService authorizationService;
 
-    // ✅ Reservar una clase
+
     @Operation(summary = "Reservar una clase")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PostMapping
@@ -39,7 +39,7 @@ public class ClassReservationController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Cancelar una reserva
+
     @Operation(summary = "Cancelar una reserva")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @DeleteMapping("/{reservationId}")
@@ -54,7 +54,6 @@ public class ClassReservationController {
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ Obtener reservas del usuario (próximas o completadas)
     @Operation(summary = "Obtener mis reservas activas o completadas")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/my")
