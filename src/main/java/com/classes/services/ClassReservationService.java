@@ -11,5 +11,8 @@ public interface ClassReservationService {
     ClassReservationResponse reserveClass(ClassReservationRequest request, UUID memberId);
     void cancelReservation(UUID reservationId, UUID memberId);
     List<ClassReservationResponse> getReservationsByMember(UUID memberId, Boolean completed);
+    void confirmAttendance(UUID reservationId, UUID memberId);
+    void completeReservation(UUID reservationId, UUID memberId);
+
 }
 
