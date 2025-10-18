@@ -2,6 +2,9 @@ package com.classes.services.Impl;
 
 import com.classes.dtos.Class.ClassRequest;
 import com.classes.dtos.Class.ClassResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import com.classes.entities.ClassEntity;
 import com.classes.entities.LocationEntity;
 import com.classes.entities.TrainerEntity;
@@ -47,6 +50,20 @@ public class ClassServiceImpl implements ClassService {
     @Override
     public List<ClassResponse> findAll() {
         return classMapper.toResponseList(repository.findAll());
+    }
+
+    @Transactional
+    @Override
+    public Page<ClassResponse> findAllPaginated(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size);
+        
+        if (search != null && !search.trim().isEmpty()) {
+            return repository.findByClassNameContainingIgnoreCaseOrTrainerFirstNameContainingIgnoreCaseOrTrainerLastNameContainingIgnoreCase(
+                search, search, search, pageable
+            ).map(classMapper::toResponse);
+        } else {
+            return repository.findAll(pageable).map(classMapper::toResponse);
+        }
     }
 
     @Transactional

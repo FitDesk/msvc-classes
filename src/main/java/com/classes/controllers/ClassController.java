@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,15 @@ public class ClassController {
     public ResponseEntity<List<ClassResponse>> findAllClasses() {
         List<ClassResponse> list = classService.findAll();
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<ClassResponse>> findAllClassesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
+        Page<ClassResponse> result = classService.findAllPaginated(page, size, search);
+        return ResponseEntity.ok(result);
     }
 
 
