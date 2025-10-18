@@ -5,6 +5,7 @@ import com.classes.dtos.Trainer.ImageResponseDTO;
 import com.classes.dtos.Trainer.TrainerRequestDTO;
 import com.classes.dtos.Trainer.TrainerResponseDTO;
 import com.classes.entities.TrainerEntity;
+import com.classes.enums.TrainerStatus;
 import com.classes.mappers.TrainerMapper;
 import com.classes.repositories.ClassRepository;
 import com.classes.repositories.TrainerRepository;
@@ -12,6 +13,10 @@ import com.classes.services.AzureService;
 import com.classes.services.CloudinaryService;
 import com.classes.services.TrainerService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -72,8 +77,23 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TrainerResponseDTO> getAllTrainers() {
-        return trainerMapper.toResponseDTOList(trainerRepository.findAll());
+    public Page<TrainerResponseDTO> getAllTrainers(int page, int size, String search, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").ascending());
+        
+        if (search != null && !search.trim().isEmpty()) {
+       
+            return trainerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(search, search, pageable)
+                    .map(trainerMapper::toResponseDTO);
+        } else if (status != null && !status.trim().isEmpty()) {
+            
+            TrainerStatus trainerStatus = TrainerStatus.valueOf(status.toUpperCase());
+            return trainerRepository.findByStatus(trainerStatus, pageable)
+                    .map(trainerMapper::toResponseDTO);
+        } else {
+            
+            return trainerRepository.findAll(pageable)
+                    .map(trainerMapper::toResponseDTO);
+        }
     }
 
     @Transactional

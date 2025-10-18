@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +35,13 @@ public class TrainerController {
 
         @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
         @GetMapping
-        public ResponseEntity<List<TrainerResponseDTO>> getAllTrainers() {
-            List<TrainerResponseDTO> trainers = trainerService.getAllTrainers();
+        public ResponseEntity<Page<TrainerResponseDTO>> getAllTrainers(
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size,
+                @RequestParam(required = false) String search,
+                @RequestParam(required = false) String status
+        ) {
+            Page<TrainerResponseDTO> trainers = trainerService.getAllTrainers(page, size, search, status);
             return ResponseEntity.ok(trainers);
         }
 

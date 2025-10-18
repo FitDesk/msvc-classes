@@ -3,6 +3,7 @@ package com.classes.services;
 import com.classes.dtos.Trainer.ImageResponseDTO;
 import com.classes.dtos.Trainer.TrainerRequestDTO;
 import com.classes.dtos.Trainer.TrainerResponseDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public interface TrainerService {
     TrainerResponseDTO getTrainerById(UUID id);
 
 
-    List<TrainerResponseDTO> getAllTrainers();
+    Page<TrainerResponseDTO> getAllTrainers(int page, int size, String search, String status);
 
 
     TrainerResponseDTO updateTrainer(UUID id,
