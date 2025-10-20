@@ -28,7 +28,7 @@ public class ClassReservationServiceImpl implements ClassReservationService {
     private final ClassRepository classRepository;
     private final ClassReservationMapper mapper;
 
-    // Reservar clase
+
     @Override
     public ClassReservationResponse reserveClass(ClassReservationRequest request, UUID memberId) {
         ClassEntity classEntity = classRepository.findById(request.getClassId())
@@ -60,7 +60,6 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         return mapper.toResponse(reservation);
     }
 
-    // Cancelar reserva
     @Override
     public void cancelReservation(UUID reservationId, UUID memberId) {
         ClassReservation reservation = reservationRepository.findById(reservationId)
@@ -87,7 +86,7 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         }
     }
 
-    // Confirmar asistencia
+
     @Override
     public void confirmAttendance(UUID reservationId, UUID memberId) {
         ClassReservation reservation = reservationRepository.findById(reservationId)
@@ -105,19 +104,15 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         reservationRepository.save(reservation);
     }
 
-    // Marcar clase como completada
     @Override
     public void completeReservation(UUID reservationId, UUID memberId) {
-        // 1️⃣ Buscar la reserva
         ClassReservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
-        // 2️⃣ Validar que sea la misma persona (opcional, si solo el usuario puede completar)
         if (!reservation.getMemberId().equals(memberId)) {
             throw new RuntimeException("No puedes completar la reserva de otro usuario");
         }
 
-        // 3️⃣ Verificar si la clase ya terminó
         LocalDateTime classEnd = LocalDateTime.of(
                 reservation.getClassEntity().getClassDate(),
                 reservation.getClassEntity().getEndTime()
@@ -127,12 +122,11 @@ public class ClassReservationServiceImpl implements ClassReservationService {
             throw new RuntimeException("La clase aún no ha terminado, no se puede completar");
         }
 
-        // 4️⃣ Cambiar el estado a COMPLETADO
         reservation.setStatus(ReservationStatus.COMPLETADO);
         reservationRepository.save(reservation);
     }
 
-    // Listar reservas por miembro
+
     @Override
     public List<ClassReservationResponse> getReservationsByMember(UUID memberId, Boolean completed) {
         List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);

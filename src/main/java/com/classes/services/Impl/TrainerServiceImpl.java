@@ -42,18 +42,12 @@ public class TrainerServiceImpl implements TrainerService {
     public TrainerResponseDTO createTrainer(TrainerRequestDTO trainerDTO,
                                             MultipartFile profileImage,
                                             List<MultipartFile> certifications) throws IOException {
-
-        // Primero guardamos el trainer para generar el UUID
         TrainerEntity trainer = trainerMapper.toEntity(trainerDTO);
         TrainerEntity savedTrainer = trainerRepository.save(trainer);
-
-        // Subida de imagen de perfil
         if (profileImage != null && !profileImage.isEmpty()) {
             ImageResponseDTO profileFile = cloudinaryService.uploadProfileImage(profileImage, savedTrainer.getId());
             savedTrainer.setProfileImageUrl(profileFile.getFileUrl());
         }
-
-        // Subida de certificaciones
         if (certifications != null && !certifications.isEmpty()) {
             List<String> certUrls = new ArrayList<>();
             for (MultipartFile cert : certifications) {
