@@ -1,5 +1,8 @@
 package com.classes.services.Impl;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import com.classes.dtos.Class.*;
 import com.classes.dtos.external.MemberInfoDTO;
 import com.classes.entities.ClassEntity;
@@ -39,7 +42,7 @@ public class ClassServiceImpl implements ClassService {
     private final ClassReservationRepository reservationRepository;
     private final MemberClientService memberClientService;
 
-    //<---CRUD---->
+
     @Transactional
     @Override
     public ClassResponse createClass(ClassRequest request) {
@@ -59,6 +62,20 @@ public class ClassServiceImpl implements ClassService {
     @Override
     public List<ClassResponse> findAll() {
         return classMapper.toResponseList(repository.findAll());
+    }
+
+    @Transactional
+    @Override
+    public Page<ClassResponse> findAllPaginated(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (search != null && !search.trim().isEmpty()) {
+            return repository.findByClassNameContainingIgnoreCaseOrTrainerFirstNameContainingIgnoreCaseOrTrainerLastNameContainingIgnoreCase(
+                search, search, search, pageable
+            ).map(classMapper::toResponse);
+        } else {
+            return repository.findAll(pageable).map(classMapper::toResponse);
+        }
     }
 
     @Transactional
@@ -119,7 +136,7 @@ public class ClassServiceImpl implements ClassService {
             Double avgAttendance = reservationRepository.calculateAverageAttendanceByClassId(classEntity.getId());
             response.setAverageAttendance(avgAttendance != null ? avgAttendance : 0.0);
             response.setStatus(determineClassStatus(classEntity, (int) currentStudents));
-            
+
             return response;
         }).collect(Collectors.toList());
     }
@@ -128,7 +145,7 @@ public class ClassServiceImpl implements ClassService {
     @Transactional(readOnly = true)
     public ClassDetailResponse getClassDetail(UUID classId) {
         log.info("🔍 Obteniendo detalle de la clase {}", classId);
-        
+
         ClassEntity classEntity = repository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("La clase con ID " + classId + " no existe"));
         ClassDetailResponse response = classStatsMapper.toClassDetailResponse(classEntity);
@@ -141,20 +158,20 @@ public class ClassServiceImpl implements ClassService {
         List<StudentInClassDTO> students = reservations.stream()
                 .map(reservation -> buildStudentDTO(reservation, membersInfo))
                 .collect(Collectors.toList());
-        
+
         response.setCurrentStudents(students.size());
         response.setStudents(students);
-        
+
         return response;
     }
-    
+
     private StudentInClassDTO buildStudentDTO(ClassReservation reservation, List<MemberInfoDTO> membersInfo) {
         MemberInfoDTO memberInfo = membersInfo.stream()
                 .filter(m -> m.getId().equals(reservation.getMemberId()))
                 .findFirst()
                 .orElse(createDefaultMemberInfo(reservation.getMemberId()));
 
-        List<ClassReservation> memberReservations = 
+        List<ClassReservation> memberReservations =
                 reservationRepository.findByMemberId(reservation.getMemberId());
 
         long totalClasses = memberReservations.size();
@@ -164,11 +181,11 @@ public class ClassServiceImpl implements ClassService {
                 .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .count();
 
-        double attendancePercentage = totalClasses > 0 
+        double attendancePercentage = totalClasses > 0
                 ? (attendedClasses * 100.0 / totalClasses) : 0.0;
-        
+
         String initials = getInitials(memberInfo.getFirstName(), memberInfo.getLastName());
-        
+
         return StudentInClassDTO.builder()
                 .memberId(reservation.getMemberId())
                 .name(memberInfo.getFirstName() + " " + memberInfo.getLastName())
@@ -187,7 +204,7 @@ public class ClassServiceImpl implements ClassService {
     @Transactional(readOnly = true)
     public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate) {
         log.info("📅 Obteniendo clases para calendario entre {} y {}", startDate, endDate);
-        
+
         List<ClassEntity> classes = repository.findByClassDateBetween(startDate, endDate);
         return mapToCalendarDTOs(classes);
     }
@@ -196,7 +213,7 @@ public class ClassServiceImpl implements ClassService {
     @Transactional(readOnly = true)
     public List<CalendarClassDTO> getUpcomingClasses() {
         log.info("📅 Obteniendo próximas clases");
-        
+
         List<ClassEntity> classes = repository.findUpcomingClasses(LocalDate.now());
         return mapToCalendarDTOs(classes);
     }
