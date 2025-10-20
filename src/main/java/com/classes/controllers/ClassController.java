@@ -24,14 +24,6 @@ import java.util.UUID;
 public class ClassController {
 
     private final ClassService classService;
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ClassResponse>> getAllClasses() {
-        log.info("Listando todas las clases");
-        List<ClassResponse> classes = classService.findAll();
-        return ResponseEntity.ok(classes);
-    }
-
 
     @PostMapping
     @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id, authentication)")

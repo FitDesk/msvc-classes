@@ -203,7 +203,7 @@ public class ClassServiceImpl implements ClassService {
     @Override
     @Transactional(readOnly = true)
     public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate) {
-        log.info("📅 Obteniendo clases para calendario entre {} y {}", startDate, endDate);
+        log.info("Obteniendo clases para calendario entre {} y {}", startDate, endDate);
 
         List<ClassEntity> classes = repository.findByClassDateBetween(startDate, endDate);
         return mapToCalendarDTOs(classes);
@@ -212,7 +212,7 @@ public class ClassServiceImpl implements ClassService {
     @Override
     @Transactional(readOnly = true)
     public List<CalendarClassDTO> getUpcomingClasses() {
-        log.info("📅 Obteniendo próximas clases");
+        log.info("Obteniendo próximas clases");
 
         List<ClassEntity> classes = repository.findUpcomingClasses(LocalDate.now());
         return mapToCalendarDTOs(classes);

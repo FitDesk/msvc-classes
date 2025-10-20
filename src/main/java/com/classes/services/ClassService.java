@@ -22,23 +22,12 @@ public interface ClassService {
 
     void deleteClass(UUID id);
 
-    /**
-     * Obtiene todas las clases con estadísticas de un trainer
-     */
+
     List<ClassWithStatsResponse> getClassesWithStatsByTrainer(UUID trainerId);
 
-    /**
-     * Obtiene el detalle completo de una clase con la lista de estudiantes
-     */
     ClassDetailResponse getClassDetail(UUID classId);
 
-    /**
-     * Obtiene las clases para el calendario en un rango de fechas
-     */
     List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate);
 
-    /**
-     * Obtiene las próximas clases futuras
-     */
     List<CalendarClassDTO> getUpcomingClasses();
 }
