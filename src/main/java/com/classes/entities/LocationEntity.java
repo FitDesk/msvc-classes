@@ -1,7 +1,7 @@
 package com.classes.entities;
 
-import com.classes.config.Audit;
-import com.classes.config.AuditListener;
+import com.classes.config.audit.Audit;
+import com.classes.config.audit.AuditListener;
 import jakarta.persistence.*;
 import lombok.*;
 

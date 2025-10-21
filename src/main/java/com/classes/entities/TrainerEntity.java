@@ -4,8 +4,8 @@ import com.classes.enums.ContractType;
 import com.classes.enums.DayAvailability;
 import com.classes.enums.Gender;
 import com.classes.enums.TrainerStatus;
-import com.classes.config.Audit;
-import com.classes.config.AuditListener;
+import com.classes.config.audit.Audit;
+import com.classes.config.audit.AuditListener;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,10 +24,7 @@ import java.util.UUID;
 @EntityListeners(AuditListener.class)
 public class TrainerEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
     private UUID userid;
-
     private String firstName;
     private String lastName;
     private String dni;

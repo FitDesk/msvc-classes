@@ -13,12 +13,10 @@ import java.util.UUID;
 
 @Repository
 public interface TrainerRepository extends JpaRepository<TrainerEntity, UUID> {
-
-  
+    Optional<TrainerEntity> findByEmail(String email);
+    Optional<TrainerEntity> findByDni(String dni);
+    boolean existsByEmail(String email);
     Page<TrainerEntity> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName, String lastName, Pageable pageable);
-
-    
     Page<TrainerEntity> findByStatus(TrainerStatus status, Pageable pageable);
-
 }
