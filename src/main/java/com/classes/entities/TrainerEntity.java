@@ -24,7 +24,7 @@ import java.util.UUID;
 @EntityListeners(AuditListener.class)
 public class TrainerEntity {
     @Id
-    private UUID id;
+    private UUID userid;
     private String firstName;
     private String lastName;
     private String dni;
@@ -66,7 +66,4 @@ public class TrainerEntity {
 
     @Embedded
     private Audit audit;
-
-
-
 }

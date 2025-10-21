@@ -25,6 +25,7 @@ public class ClassEntity {
     private int duration;
 
     private int maxCapacity;
+    private LocalDate classDate;
     private LocalTime startTime;
     private LocalTime endTime;
     private boolean active;
