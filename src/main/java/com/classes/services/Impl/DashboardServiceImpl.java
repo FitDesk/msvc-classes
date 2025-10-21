@@ -25,22 +25,20 @@ public class DashboardServiceImpl {
     public MemberDashboardDTO getDashboardForMember(UUID memberId) {
         List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);
 
-        // 🔹 Filtrar solo reservas activas (RESERVADO o atendidas)
         List<ClassReservation> activeReservations = reservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.RESERVADO || r.isAttended())
+                .filter(r -> r.getStatus() == ReservationStatus.RESERVADO || Boolean.TRUE.equals(r.getAttended()))
                 .toList();
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 🔹 En clase actualmente (entre hora inicio y fin)
         boolean inClass = activeReservations.stream()
                 .anyMatch(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
                     LocalDateTime end = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getEndTime());
-                    return !now.isBefore(start) && !now.isAfter(end) && r.getStatus() == ReservationStatus.RESERVADO;
+                    return !now.isBefore(start) && !now.isAfter(end)
+                            && r.getStatus() == ReservationStatus.RESERVADO;
                 });
 
-        // 🔹 Próxima clase (según hora y fecha más cercana futura)
         Optional<ClassReservation> nextClassOpt = activeReservations.stream()
                 .filter(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
@@ -49,31 +47,25 @@ public class DashboardServiceImpl {
                 .sorted(Comparator.comparing(r -> r.getClassEntity().getStartTime()))
                 .findFirst();
 
-        // 🔹 Clases restantes = reservadas - asistidas
         int totalReserved = (int) activeReservations.stream()
                 .filter(r -> r.getStatus() == ReservationStatus.RESERVADO)
                 .count();
 
         int attended = (int) activeReservations.stream()
-                .filter(ClassReservation::isAttended)
+                .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .count();
 
         int remaining = Math.max(totalReserved - attended, 0);
-
-        // 🔹 Días consecutivos de asistencia
         int consecutiveDays = calcularDiasConsecutivos(activeReservations);
-
-        // 🔹 Actividad semanal
         List<WeeklyActivityDTO> weeklyActivity = calcularActividadSemanal(activeReservations);
 
-        // 🔹 Próximas clases (2 o 3 siguientes después de la próxima)
         List<UpcomingClassDTO> upcoming = activeReservations.stream()
                 .filter(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
                     return start.isAfter(now);
                 })
                 .sorted(Comparator.comparing(r -> r.getClassEntity().getStartTime()))
-                .skip(1) // omitir la primera (ya es la "nextClass")
+                .skip(1)
                 .limit(3)
                 .map(r -> UpcomingClassDTO.builder()
                         .className(r.getClassEntity().getClassName())
@@ -84,7 +76,6 @@ public class DashboardServiceImpl {
                         .build())
                 .toList();
 
-        // 🔹 Construcción del DTO final
         return MemberDashboardDTO.builder()
                 .inClass(inClass)
                 .remainingClasses(remaining)
@@ -96,9 +87,10 @@ public class DashboardServiceImpl {
                 .build();
     }
 
+
     private int calcularDiasConsecutivos(List<ClassReservation> reservations) {
         var dates = reservations.stream()
-                .filter(ClassReservation::isAttended)
+                .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .map(r -> r.getReservedAt().toLocalDate())
                 .distinct()
                 .sorted(Comparator.reverseOrder())
@@ -117,7 +109,7 @@ public class DashboardServiceImpl {
 
     private List<WeeklyActivityDTO> calcularActividadSemanal(List<ClassReservation> reservations) {
         Map<DayOfWeek, Long> map = reservations.stream()
-                .filter(ClassReservation::isAttended)
+                .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .collect(Collectors.groupingBy(r -> r.getReservedAt().getDayOfWeek(), Collectors.counting()));
 
         return Arrays.stream(DayOfWeek.values())

@@ -28,7 +28,7 @@ public interface ClassReservationMapper {
     @Mapping(target = "locationName", source = "entity.classEntity.location.name")
     @Mapping(target = "schedule", expression = "java(entity.getClassEntity().getStartTime() + \" - \" + entity.getClassEntity().getEndTime())")
     @Mapping(target = "capacity", expression = "java(entity.getClassEntity().getReservations().stream().filter(r -> r.getStatus() == com.classes.enums.ReservationStatus.RESERVADO).count() + \"/\" + entity.getClassEntity().getMaxCapacity() + \" inscritos\")")
-    @Mapping(target = "action", expression = "java(entity.getStatus() == com.classes.enums.ReservationStatus.RESERVADO ? \"Cancelar\" : entity.getStatus() == com.classes.enums.ReservationStatus.LISTA_ESPERA ? \"Esperar\" : \"Reservar\")")
+    @Mapping(target = "action", expression = "java(entity.getStatus().name())")
     @Mapping(target = "alreadyReserved", expression = "java(entity.getStatus() != com.classes.enums.ReservationStatus.CANCELADO)")
     @Mapping(target = "completed", expression = "java(entity.getClassEntity().getStartTime().isBefore(java.time.LocalTime.now()))")
     ClassReservationResponse toResponse(ClassReservation entity);

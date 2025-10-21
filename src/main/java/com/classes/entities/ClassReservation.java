@@ -29,7 +29,9 @@ public class ClassReservation {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status; // RESERVADO, LISTA_ESPERA, CANCELADO
     private LocalDateTime reservedAt;
-    @Transient
-    private boolean attended;
+    @Column(name = "attended")
+    private Boolean attended = false;
+
+
 
 }

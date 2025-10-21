@@ -26,6 +26,7 @@ public class TrainerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+    private UUID userid;
 
     private String firstName;
     private String lastName;
@@ -68,7 +69,4 @@ public class TrainerEntity {
 
     @Embedded
     private Audit audit;
-
-
-
 }

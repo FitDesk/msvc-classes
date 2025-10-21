@@ -1,7 +1,8 @@
 package com.classes.mappers;
 
 import com.classes.config.MapStructConfig;
-import com.classes.dtos.Trainer.TrainerDTO;
+import com.classes.dtos.Trainer.TrainerRequestDTO;
+import com.classes.dtos.Trainer.TrainerResponseDTO;
 import com.classes.entities.TrainerEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
@@ -12,9 +13,12 @@ import java.util.List;
 
 @Mapper(config = MapStructConfig.class)
 public interface TrainerMapper {
-    TrainerEntity toEntity(TrainerDTO dto);
-    TrainerDTO toDTO(TrainerEntity trainer);
+    TrainerEntity toEntity(TrainerRequestDTO dto);
+
+    TrainerResponseDTO toResponseDTO(TrainerEntity trainer);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateTrainerFromDTO(TrainerDTO dto, @MappingTarget TrainerEntity trainer);
-    List<TrainerDTO> toDTOList(List<TrainerEntity> trainers);
+    void updateTrainerFromDTO(TrainerRequestDTO dto, @MappingTarget TrainerEntity trainer);
+
+    List<TrainerResponseDTO> toResponseDTOList(List<TrainerEntity> trainers);
 }

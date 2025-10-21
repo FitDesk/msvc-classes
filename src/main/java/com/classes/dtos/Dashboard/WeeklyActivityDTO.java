@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class WeeklyActivityDTO {
-    private String day; // Lunes, Martes, etc.
-    private int sessions; // cantidad de clases asistidas ese día
+    private String day;
+    private int sessions;
 }

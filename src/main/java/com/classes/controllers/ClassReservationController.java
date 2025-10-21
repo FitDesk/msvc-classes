@@ -16,60 +16,82 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/reservations")
 @RequiredArgsConstructor
 @Slf4j
 public class ClassReservationController {
 
     private final ClassReservationService reservationService;
-    private final AuthorizationService authorizationService; // Para obtener userId desde el token/cookie
+    private final AuthorizationService authorizationService;
 
-    // ✅ Reservar una clase
+
     @Operation(summary = "Reservar una clase")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ClassReservationResponse> reserveClass(
             @RequestBody ClassReservationRequest request,
             Authentication authentication) {
-
         UUID memberId = authorizationService.getUserId(authentication);
         log.info("🎟️ Usuario {} intentando reservar clase {}", memberId, request.getClassId());
-
         ClassReservationResponse response = reservationService.reserveClass(request, memberId);
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Cancelar una reserva
+
     @Operation(summary = "Cancelar una reserva")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Void> cancelReservation(
             @PathVariable UUID reservationId,
             Authentication authentication) {
-
         UUID memberId = authorizationService.getUserId(authentication);
         log.info("❌ Usuario {} cancelando reserva {}", memberId, reservationId);
-
         reservationService.cancelReservation(reservationId, memberId);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ Obtener reservas del usuario (próximas o completadas)
+
+    @Operation(summary = "Confirmar asistencia a una clase reservada")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PutMapping("/{reservationId}/confirm")
+    public ResponseEntity<Void> confirmAttendance(
+            @PathVariable UUID reservationId,
+            Authentication authentication) {
+
+        UUID memberId = authorizationService.getUserId(authentication);
+        log.info("✅ Usuario {} confirmando asistencia para reserva {}", memberId, reservationId);
+
+        reservationService.confirmAttendance(reservationId, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Marcar una reserva como completada")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PutMapping("/{reservationId}/complete")
+    public ResponseEntity<Void> completeReservation(
+            @PathVariable UUID reservationId,
+            Authentication authentication) {
+
+        UUID memberId = authorizationService.getUserId(authentication);
+        log.info("🏁 Usuario {} completando reserva {}", memberId, reservationId);
+
+        reservationService.completeReservation(reservationId, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+
     @Operation(summary = "Obtener mis reservas activas o completadas")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/my")
     public ResponseEntity<List<ClassReservationResponse>> getMyReservations(
             Authentication authentication,
             @RequestParam(required = false) Boolean completed) {
-
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("📋 Usuario {} consultando sus reservas", memberId);
-
+        log.info("📋 Usuario {} consultando sus reservas (completed={})", memberId, completed);
         List<ClassReservationResponse> reservations = reservationService.getReservationsByMember(memberId, completed);
         if (reservations.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(reservations);
     }
 }

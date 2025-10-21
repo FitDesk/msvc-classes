@@ -1,4 +1,5 @@
 package com.classes.services.Impl;
+
 import com.classes.dtos.reservations.ClassReservationRequest;
 import com.classes.dtos.reservations.ClassReservationResponse;
 import com.classes.entities.ClassEntity;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -26,32 +28,32 @@ public class ClassReservationServiceImpl implements ClassReservationService {
     private final ClassRepository classRepository;
     private final ClassReservationMapper mapper;
 
+
     @Override
     public ClassReservationResponse reserveClass(ClassReservationRequest request, UUID memberId) {
-        // 1️⃣ Obtener la clase
         ClassEntity classEntity = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
 
-        // 2️⃣ Verificar si el usuario ya tiene reserva activa
         Optional<ClassReservation> existing = reservationRepository
                 .findByClassEntityIdAndMemberId(classEntity.getId(), memberId);
+
         if (existing.isPresent() && existing.get().getStatus() != ReservationStatus.CANCELADO) {
-            throw new RuntimeException("Ya tienes una reserva para esta clase");
+            throw new RuntimeException("Ya tienes una reserva activa para esta clase");
         }
 
-        // 3️⃣ Calcular estado de la reserva (RESERVADO o LISTA_ESPERA)
         long reservedCount = classEntity.getReservations().stream()
                 .filter(r -> r.getStatus() == ReservationStatus.RESERVADO)
                 .count();
+
         ReservationStatus status = reservedCount < classEntity.getMaxCapacity()
                 ? ReservationStatus.RESERVADO
                 : ReservationStatus.LISTA_ESPERA;
 
-        // 4️⃣ Crear la reserva
         ClassReservation reservation = mapper.toEntity(request);
         reservation.setClassEntity(classEntity);
         reservation.setMemberId(memberId);
         reservation.setStatus(status);
+        reservation.setReservedAt(LocalDateTime.now());
 
         reservationRepository.save(reservation);
 
@@ -70,7 +72,7 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         reservation.setStatus(ReservationStatus.CANCELADO);
         reservationRepository.save(reservation);
 
-        // 5️⃣ Lista de espera automática: pasar al primer miembro en espera
+        // Promover primer usuario en lista de espera
         List<ClassReservation> waitingList = reservationRepository.findByClassEntityId(reservation.getClassEntity().getId())
                 .stream()
                 .filter(r -> r.getStatus() == ReservationStatus.LISTA_ESPERA)
@@ -84,14 +86,66 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         }
     }
 
+
+    @Override
+    public void confirmAttendance(UUID reservationId, UUID memberId) {
+        ClassReservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+        if (!reservation.getMemberId().equals(memberId)) {
+            throw new RuntimeException("No puedes confirmar la asistencia de otro usuario");
+        }
+
+        if (reservation.getStatus() != ReservationStatus.RESERVADO) {
+            throw new RuntimeException("Solo puedes confirmar reservas activas");
+        }
+
+        reservation.setStatus(ReservationStatus.PENDIENTE);
+        reservationRepository.save(reservation);
+    }
+
+    @Override
+    public void completeReservation(UUID reservationId, UUID memberId) {
+        ClassReservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+        if (!reservation.getMemberId().equals(memberId)) {
+            throw new RuntimeException("No puedes completar la reserva de otro usuario");
+        }
+
+        LocalDateTime classEnd = LocalDateTime.of(
+                reservation.getClassEntity().getClassDate(),
+                reservation.getClassEntity().getEndTime()
+        );
+
+        if (classEnd.isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("La clase aún no ha terminado, no se puede completar");
+        }
+
+        reservation.setStatus(ReservationStatus.COMPLETADO);
+        reservationRepository.save(reservation);
+    }
+
+
     @Override
     public List<ClassReservationResponse> getReservationsByMember(UUID memberId, Boolean completed) {
         List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);
 
         return reservations.stream()
-                .filter(r -> completed == null
-                        || r.getClassEntity().getStartTime().isBefore(java.time.LocalTime.now()) == completed)
-                .sorted(Comparator.comparing(r -> r.getClassEntity().getStartTime()))
+                .filter(r -> {
+                    if (completed == null) return true;
+
+                    // Combinar fecha y hora en LocalDateTime
+                    LocalDateTime classEnd = LocalDateTime.of(
+                            r.getClassEntity().getClassDate(),
+                            r.getClassEntity().getEndTime()
+                    );
+
+                    return (classEnd.isBefore(LocalDateTime.now()) == completed);
+                })
+                .sorted(Comparator.comparing(r ->
+                        LocalDateTime.of(r.getClassEntity().getClassDate(), r.getClassEntity().getStartTime())
+                ))
                 .map(mapper::toResponse)
                 .toList();
     }
