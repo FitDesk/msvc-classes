@@ -20,11 +20,7 @@ import java.time.LocalDate;
 public class TrainerEventHandler {
     private final TrainerRepository trainerRepository;
 
-    @KafkaListener(
-            topics = "trainer-events",
-            groupId = "msvc-classes-group",
-            containerFactory = "kafkaListenerContainerFactory"
-    )
+    @KafkaListener(topics = "trainer-created-event-topic")
     @Transactional
     public void consumeTrainerCreatedEvent(
             ConsumerRecord<String, TrainerCreatedEvent> record,
@@ -32,17 +28,17 @@ public class TrainerEventHandler {
 
         TrainerCreatedEvent event = record.value();
         log.info("Recibido evento TRAINER_CREATED: userId={}, eventId={}",
-                event.userId(), event.eventId());
+                event.id(), event.eventId());
 
         try {
-            if (trainerRepository.existsById(event.userId())) {
-                log.warn("Trainer con userId={} ya existe. Evento duplicado ignorado.", event.userId());
+            if (trainerRepository.existsById(event.id())) {
+                log.warn("Trainer con userId={} ya existe. Evento duplicado ignorado.", event.id());
                 acknowledgment.acknowledge();
                 return;
             }
 
             TrainerEntity trainer = TrainerEntity.builder()
-                    .id(event.userId())
+                    .id(event.id())
                     .firstName(event.firstName())
                     .lastName(event.lastName())
                     .dni(event.dni())
@@ -56,14 +52,12 @@ public class TrainerEventHandler {
             trainerRepository.save(trainer);
             log.info("Trainer creado exitosamente con ID: {}", trainer.getId());
 
-            // Confirmar procesamiento
             acknowledgment.acknowledge();
 
         } catch (
                 Exception e) {
-            log.error("Error procesando evento TRAINER_CREATED para userId={}", event.userId(), e);
-            // No hacer acknowledge para que Kafka reintente
-            // O enviar a DLQ (Dead Letter Queue)
+            log.error("Error procesando evento TRAINER_CREATED para userId={}", event.id(), e);
+
             throw e;
         }
     }
