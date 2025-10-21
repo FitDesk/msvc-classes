@@ -1,4 +1,4 @@
-package com.classes.config;
+package com.classes.config.audit;
 
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;

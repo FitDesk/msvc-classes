@@ -1,11 +1,10 @@
 package com.classes.entities;
 
-import com.classes.config.Audit;
-import com.classes.config.AuditListener;
+import com.classes.config.audit.Audit;
+import com.classes.config.audit.AuditListener;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
