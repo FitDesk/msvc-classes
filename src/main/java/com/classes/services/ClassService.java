@@ -4,6 +4,7 @@ import com.classes.dtos.Class.*;
 import org.springframework.data.domain.Page;
 import com.classes.dtos.Class.ClassRequest;
 import com.classes.dtos.Class.ClassResponse;
+import com.classes.dtos.Class.MonthlyCalendarDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,13 +22,6 @@ public interface ClassService {
     ClassResponse updateClass(UUID id, ClassRequest request);
 
     void deleteClass(UUID id);
-
-
-    List<ClassWithStatsResponse> getClassesWithStatsByTrainer(UUID trainerId);
-
-    ClassDetailResponse getClassDetail(UUID classId);
-
-    List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate);
-
-    List<CalendarClassDTO> getUpcomingClasses();
+    
+    MonthlyCalendarDTO getMonthlyCalendar(int year, int month);
 }

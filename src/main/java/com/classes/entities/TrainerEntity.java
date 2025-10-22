@@ -24,7 +24,8 @@ import java.util.UUID;
 @EntityListeners(AuditListener.class)
 public class TrainerEntity {
     @Id
-    private UUID userid;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     private String firstName;
     private String lastName;
     private String dni;

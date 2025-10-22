@@ -26,7 +26,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    private static final String TRAINERS_FOLDER = "fitdesk/classes/profile";
+    private static final String TRAINERS_FOLDER = "fitdesk/classes/trainerprofile";
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg","jpeg","png","webp");
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
