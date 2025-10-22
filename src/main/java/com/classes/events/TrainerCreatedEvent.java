@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Builder
 public record TrainerCreatedEvent(
-        UUID userId,
+        UUID id,
         String email,
         String firstName,
         String lastName,
@@ -26,7 +26,7 @@ public record TrainerCreatedEvent(
     public static TrainerCreatedEvent create(UUID userId, String email, String firstName,
                                              String lastName, String dni, String phone) {
         return TrainerCreatedEvent.builder()
-                .userId(userId)
+                .id(userId)
                 .email(email)
                 .firstName(firstName)
                 .lastName(lastName)
