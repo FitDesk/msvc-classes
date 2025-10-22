@@ -23,14 +23,12 @@ public class DashboardServiceImpl {
     private final ClassReservationRepository reservationRepository;
 
     public MemberDashboardDTO getDashboardForMember(UUID memberId) {
-        List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);
 
+        List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);
         List<ClassReservation> activeReservations = reservations.stream()
                 .filter(r -> r.getStatus() == ReservationStatus.RESERVADO || Boolean.TRUE.equals(r.getAttended()))
                 .toList();
-
         LocalDateTime now = LocalDateTime.now();
-
         boolean inClass = activeReservations.stream()
                 .anyMatch(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
@@ -38,7 +36,6 @@ public class DashboardServiceImpl {
                     return !now.isBefore(start) && !now.isAfter(end)
                             && r.getStatus() == ReservationStatus.RESERVADO;
                 });
-
         Optional<ClassReservation> nextClassOpt = activeReservations.stream()
                 .filter(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
@@ -46,19 +43,14 @@ public class DashboardServiceImpl {
                 })
                 .sorted(Comparator.comparing(r -> r.getClassEntity().getStartTime()))
                 .findFirst();
-
         int totalReserved = (int) activeReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.RESERVADO)
-                .count();
-
+                .filter(r -> r.getStatus() == ReservationStatus.RESERVADO).count();
         int attended = (int) activeReservations.stream()
                 .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .count();
-
         int remaining = Math.max(totalReserved - attended, 0);
         int consecutiveDays = calcularDiasConsecutivos(activeReservations);
         List<WeeklyActivityDTO> weeklyActivity = calcularActividadSemanal(activeReservations);
-
         List<UpcomingClassDTO> upcoming = activeReservations.stream()
                 .filter(r -> {
                     LocalDateTime start = LocalDateTime.of(LocalDate.now(), r.getClassEntity().getStartTime());
@@ -75,7 +67,6 @@ public class DashboardServiceImpl {
                         .location(r.getClassEntity().getLocation().getName())
                         .build())
                 .toList();
-
         return MemberDashboardDTO.builder()
                 .inClass(inClass)
                 .remainingClasses(remaining)

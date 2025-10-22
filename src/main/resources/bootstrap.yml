@@ -10,3 +10,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
+# Logging para debuggear Feign
+logging:
+  level:
+    com.classes.clients: DEBUG
+    feign: DEBUG

@@ -24,8 +24,7 @@ import java.util.UUID;
 @EntityListeners(AuditListener.class)
 public class TrainerEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID id;  // ID del usuario desde msvc-security (no se genera automáticamente)
     private String firstName;
     private String lastName;
     private String dni;
