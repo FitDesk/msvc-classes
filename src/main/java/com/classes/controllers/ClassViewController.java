@@ -1,8 +1,10 @@
 package com.classes.controllers;
 
 import com.classes.dtos.Class.*;
+import com.classes.dtos.Class.MonthlyCalendarDTO;
 import com.classes.services.AuthorizationService;
 import com.classes.services.ClassService;
+import com.classes.services.ClassStatsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class ClassViewController {
 
     private final ClassService classService;
+    private final ClassStatsService classStatsService;
     private final AuthorizationService authorizationService;
 
     @Operation(summary = "Listar todas las clases", description = "Todos los roles pueden ver la lista")
@@ -42,7 +45,7 @@ public class ClassViewController {
     public ResponseEntity<List<ClassWithStatsResponse>> getMyClassesWithStats(Authentication authentication) {
         UUID trainerId = authorizationService.getUserId(authentication);
         log.info("Trainer {} consultando sus clases con estadísticas", trainerId);
-        List<ClassWithStatsResponse> classes = classService.getClassesWithStatsByTrainer(trainerId);
+        List<ClassWithStatsResponse> classes = classStatsService.getClassesWithStatsByTrainer(trainerId);
         return ResponseEntity.ok(classes);
     }
 
@@ -51,7 +54,7 @@ public class ClassViewController {
     @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     public ResponseEntity<ClassDetailResponse> getClassDetail(@PathVariable UUID id) {
         log.info("Consultando detalle de la clase {}", id);
-        ClassDetailResponse detail = classService.getClassDetail(id);
+        ClassDetailResponse detail = classStatsService.getClassDetail(id);
         return ResponseEntity.ok(detail);
     }
 
@@ -65,10 +68,10 @@ public class ClassViewController {
         log.info("📅 Consultando clases para calendario");
         
         if (startDate != null && endDate != null) {
-            List<CalendarClassDTO> classes = classService.getClassesForCalendar(startDate, endDate);
+            List<CalendarClassDTO> classes = classStatsService.getClassesForCalendar(startDate, endDate);
             return ResponseEntity.ok(classes);
         } else {
-            List<CalendarClassDTO> classes = classService.getUpcomingClasses();
+            List<CalendarClassDTO> classes = classStatsService.getUpcomingClasses();
             return ResponseEntity.ok(classes);
         }
     }
@@ -78,7 +81,18 @@ public class ClassViewController {
     @PreAuthorize("hasRole('USER') or hasRole('TRAINER') or hasRole('ADMIN')")
     public ResponseEntity<List<CalendarClassDTO>> getUpcomingClasses() {
         log.info("Consultando próximas clases");
-        List<CalendarClassDTO> classes = classService.getUpcomingClasses();
+        List<CalendarClassDTO> classes = classStatsService.getUpcomingClasses();
         return ResponseEntity.ok(classes);
+    }
+
+    @Operation(summary = "Ver calendario mensual", description = "Vista de calendario por mes con clases agrupadas por fecha")
+    @GetMapping("/calendar/monthly")
+    @PreAuthorize("hasRole('USER') or hasRole('TRAINER') or hasRole('ADMIN')")
+    public ResponseEntity<MonthlyCalendarDTO> getMonthlyCalendar(
+            @RequestParam int year,
+            @RequestParam int month) {
+        log.info("📅 Consultando calendario mensual para {}/{}", month, year);
+        MonthlyCalendarDTO calendar = classService.getMonthlyCalendar(year, month);
+        return ResponseEntity.ok(calendar);
     }
 }

@@ -2,6 +2,7 @@ package com.classes.controllers;
 
 import com.classes.dtos.Class.ClassRequest;
 import com.classes.dtos.Class.ClassResponse;
+import com.classes.dtos.Class.MonthlyCalendarDTO;
 import com.classes.services.ClassService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,5 +65,16 @@ public class ClassController {
         log.info("🗑Admin eliminando clase: {}", id);
         classService.deleteClass(id);
         return ResponseEntity.ok("Clase eliminada correctamente");
+    }
+
+    @Operation(summary = "Ver calendario mensual", description = "Vista de calendario por mes con clases agrupadas por fecha")
+    @GetMapping("/calendar/monthly")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MonthlyCalendarDTO> getMonthlyCalendar(
+            @RequestParam int year,
+            @RequestParam int month) {
+        log.info("📅 Admin consultando calendario mensual para {}/{}", month, year);
+        MonthlyCalendarDTO calendar = classService.getMonthlyCalendar(year, month);
+        return ResponseEntity.ok(calendar);
     }
 }
