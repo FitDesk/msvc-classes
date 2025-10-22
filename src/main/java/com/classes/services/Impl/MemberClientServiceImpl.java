@@ -1,15 +1,12 @@
 package com.classes.services.Impl;
 
+import com.classes.clients.MemberFeignClient;
 import com.classes.dtos.external.MemberInfoDTO;
 import com.classes.services.MemberClientService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,28 +17,26 @@ import java.util.UUID;
 @Slf4j
 public class MemberClientServiceImpl implements MemberClientService {
     
-    private final RestTemplate restTemplate;
-    private static final String MEMBERS_SERVICE_URL = "http://msvc-members";
+    private final MemberFeignClient memberFeignClient;
     
     @Override
     public MemberInfoDTO getMemberInfo(UUID memberId) {
         try {
-            String url = MEMBERS_SERVICE_URL + "/members/" + memberId;
-            log.debug("🔗 Llamando al microservicio de members: {}", url);
-            
-            ResponseEntity<MemberInfoDTO> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    MemberInfoDTO.class
-            );
-            return response.getBody();
-        } catch (HttpClientErrorException.NotFound e) {
-            log.warn("❌ Miembro {} no encontrado en el microservicio de members", memberId);
+            log.info("🔗 Consultando información del miembro {} usando Feign", memberId);
+            MemberInfoDTO result = memberFeignClient.getMemberInfo(memberId);
+            log.info("✅ Información recibida: {} {}", result.getFirstName(), result.getLastName());
+            return result;
+        } catch (FeignException.NotFound e) {
+            log.error("❌ Miembro {} no encontrado en msvc-members (404)", memberId);
+            return null;
+        } catch (FeignException e) {
+            log.error("❌ Error Feign al consultar miembro {}: {} - {}",
+                    memberId, e.status(), e.getMessage());
+            log.error("❌ Response body: {}", e.contentUTF8());
             return null;
         } catch (Exception e) {
-            log.error("❌ Error al consultar el microservicio de members para el miembro {}: {}", 
-                    memberId, e.getMessage());
+            log.error("❌ Error inesperado al consultar miembro {}: {}",
+                    memberId, e.getMessage(), e);
             return null;
         }
     }

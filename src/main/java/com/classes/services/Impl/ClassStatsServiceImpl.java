@@ -64,7 +64,15 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .map(ClassReservation::getMemberId)
                 .distinct()
                 .collect(Collectors.toList());
+        
+        log.info("📋 Consultando información de {} miembros: {}", memberIds.size(), memberIds);
         List<MemberInfoDTO> membersInfo = memberClientService.getMembersInfo(memberIds);
+        log.info("📊 Información obtenida de {} miembros", membersInfo.size());
+        
+        if (membersInfo.isEmpty() && !memberIds.isEmpty()) {
+            log.warn("⚠️ No se pudo obtener información de ningún miembro. Usando datos por defecto.");
+        }
+        
         List<StudentInClassDTO> students = reservations.stream()
                 .map(reservation -> buildStudentDTO(reservation, membersInfo))
                 .collect(Collectors.toList());
@@ -115,14 +123,20 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 ? (attendedClasses * 100.0 / totalClasses) : 0.0;
 
         String initials = getInitials(memberInfo.getFirstName(), memberInfo.getLastName());
+        
+        // Extraer tipo de membresía
+        String membershipType = "N/A";
+        if (memberInfo.getMembershipType() != null) {
+            membershipType = memberInfo.getMembershipType().getType();
+        }
 
         return StudentInClassDTO.builder()
                 .memberId(reservation.getMemberId())
                 .name(memberInfo.getFirstName() + " " + memberInfo.getLastName())
                 .email(memberInfo.getEmail())
                 .avatarInitials(initials)
-                .status(memberInfo.getStatus())
-                .membershipType(memberInfo.getMembershipType())
+                .status(memberInfo.getStatus() != null ? memberInfo.getStatus() : "DESCONOCIDO")
+                .membershipType(membershipType)
                 .attendancePercentage(attendancePercentage)
                 .totalClasses((int) totalClasses)
                 .lastAccess(memberInfo.getLastAccess())
@@ -172,7 +186,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .lastName("Desconocido")
                 .email("no-disponible@email.com")
                 .status("DESCONOCIDO")
-                .membershipType("N/A")
+                .membershipType(null)  // membership es null por defecto
                 .build();
     }
 
