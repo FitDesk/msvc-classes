@@ -24,6 +24,7 @@ public interface ClassMapper {
     @Mapping(target = "trainer", ignore = true)
     @Mapping(target = "reservations", ignore = true)
     @Mapping(target = "audit", ignore = true)
+    @Mapping(target = "status", ignore = true) // se usa el valor por defecto PROGRAMADA
     ClassEntity toEntity(ClassRequest request);
 
     /**
@@ -32,6 +33,7 @@ public interface ClassMapper {
     @Mapping(target = "locationName", source = "location.name")
     @Mapping(target = "trainerName", expression = "java(entity.getTrainer().getFirstName() + \" \" + entity.getTrainer().getLastName())")
     @Mapping(target = "schedule", expression = "java(entity.getStartTime() + \" - \" + entity.getEndTime())")
+    @Mapping(target = "status", expression = "java(entity.getStatus().name())")
     ClassResponse toResponse(ClassEntity entity);
 
     /**
@@ -48,5 +50,6 @@ public interface ClassMapper {
     @Mapping(target = "location", ignore = true)
     @Mapping(target = "reservations", ignore = true)
     @Mapping(target = "audit", ignore = true)
+    @Mapping(target = "status", ignore = true) // el status se cambia con endpoints específicos
     void updateFromRequest(ClassRequest request, @MappingTarget ClassEntity entity);
 }

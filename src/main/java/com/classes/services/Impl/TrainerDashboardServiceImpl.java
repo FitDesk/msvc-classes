@@ -29,7 +29,18 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
     @Transactional(readOnly = true)
     public TrainerDashboardDTO getDashboardForTrainer(UUID trainerId) {
         log.info("📊 Generando dashboard para el trainer {}", trainerId);
+        
+        // 🔹 Total de clases asignadas al trainer
         List<ClassEntity> trainerClasses = classRepository.findByTrainerId(trainerId);
+        int totalClasses = trainerClasses.size();
+        
+        // 🔹 Clases completadas (status = COMPLETADA)
+        long completedClasses = classRepository.countCompletedClassesByTrainerId(trainerId);
+        
+        // 🔹 Próximas clases (futuras)
+        long upcomingClasses = classRepository.countUpcomingClassesByTrainerId(trainerId, LocalDate.now());
+        
+        // 🔹 Total de estudiantes únicos en todas las clases del trainer
         Set<UUID> uniqueStudents = new HashSet<>();
         for (ClassEntity classEntity : trainerClasses) {
             List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classEntity.getId());
@@ -56,8 +67,11 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
         List<StudentTrendDTO> studentTrends = calculateStudentTrends(trainerClasses);
         
         return TrainerDashboardDTO.builder()
+                .totalClasses(totalClasses)
+                .completedClasses((int) completedClasses)
                 .totalStudents(totalStudents)
                 .averageAttendance(averageAttendance)
+                .upcomingClasses((int) upcomingClasses)
                 .classesThisMonth((int) classesThisMonth)
                 .attendanceChange(attendanceChange)
                 .studentTrends(studentTrends)

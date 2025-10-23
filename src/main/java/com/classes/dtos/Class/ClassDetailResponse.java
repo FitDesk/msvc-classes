@@ -35,5 +35,6 @@ public class ClassDetailResponse {
     
     private String schedule;
     private boolean active;
+    private String status;
     private List<StudentInClassDTO> students;
 }

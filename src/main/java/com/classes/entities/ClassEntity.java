@@ -2,6 +2,7 @@ package com.classes.entities;
 
 import com.classes.config.audit.Audit;
 import com.classes.config.audit.AuditListener;
+import com.classes.enums.ClassStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,11 @@ public class ClassEntity {
     private LocalTime endTime;
     private boolean active;
     private String description;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'PROGRAMADA'")
+    @Builder.Default
+    private ClassStatus status = ClassStatus.PROGRAMADA;
 
     @ManyToOne
     @JoinColumn(name = "location_id")

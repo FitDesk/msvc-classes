@@ -85,6 +85,26 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate, String status, UUID locationId) {
+        log.info("Obteniendo clases para calendario entre {} y {} con filtros - Estado: {}, Ubicación: {}", 
+                startDate, endDate, status, locationId);
+
+        List<ClassEntity> classes = repository.findByClassDateBetween(startDate, endDate);
+        return mapToCalendarDTOs(classes, status, locationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CalendarClassDTO> getUpcomingClasses(String status, UUID locationId) {
+        log.info("Obteniendo próximas clases con filtros - Estado: {}, Ubicación: {}", status, locationId);
+
+        List<ClassEntity> classes = repository.findUpcomingClasses(LocalDate.now());
+        return mapToCalendarDTOs(classes, status, locationId);
+    }
+
+    // Métodos sobrecargados sin filtros (para uso interno)
+    @Override
+    @Transactional(readOnly = true)
     public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate) {
         log.info("Obteniendo clases para calendario entre {} y {}", startDate, endDate);
 
@@ -144,16 +164,47 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .build();
     }
 
+    // Método sin filtros (para uso interno)
     private List<CalendarClassDTO> mapToCalendarDTOs(List<ClassEntity> classes) {
-        return classes.stream().map(classEntity -> {
-            CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
-            long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
-                    classEntity.getId(), ReservationStatus.RESERVADO);
-            dto.setCurrentStudents((int) currentStudents);
-            String action = determineAction(classEntity, (int) currentStudents);
-            dto.setAction(action);
-            return dto;
-        }).collect(Collectors.toList());
+        return classes.stream()
+                .map(classEntity -> {
+                    CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
+                    long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
+                            classEntity.getId(), ReservationStatus.RESERVADO);
+                    dto.setCurrentStudents((int) currentStudents);
+                    String action = determineAction(classEntity, (int) currentStudents);
+                    dto.setAction(action);
+                    return dto;
+                }).collect(Collectors.toList());
+    }
+
+    // Método con filtros (para endpoints con filtros)
+    private List<CalendarClassDTO> mapToCalendarDTOs(List<ClassEntity> classes, String status, UUID locationId) {
+        return classes.stream()
+                .filter(classEntity -> {
+                    // Filtrar por estado si se proporciona
+                    if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("TODOS")) {
+                        if (!classEntity.getStatus().name().equalsIgnoreCase(status)) {
+                            return false;
+                        }
+                    }
+                    // Filtrar por ubicación si se proporciona
+                    if (locationId != null) {
+                        if (!classEntity.getLocation().getId().equals(locationId)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .map(classEntity -> {
+                    CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
+                    long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
+                            classEntity.getId(), ReservationStatus.RESERVADO);
+                    dto.setCurrentStudents((int) currentStudents);
+                    String action = determineAction(classEntity, (int) currentStudents);
+                    dto.setAction(action);
+                    return dto;
+                }).collect(Collectors.toList());
     }
 
     private String determineClassStatus(ClassEntity classEntity, int currentStudents) {

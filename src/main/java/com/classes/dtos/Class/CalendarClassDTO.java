@@ -33,4 +33,5 @@ public class CalendarClassDTO {
     private int currentStudents;
     private int maxCapacity;
     private String action; // "Reservar", "Lista de espera", "Llena"
+    private String status; // "PROGRAMADA", "EN_PROCESO", "COMPLETADA", "CANCELADA"
 }

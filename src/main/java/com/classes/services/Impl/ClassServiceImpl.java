@@ -1,5 +1,6 @@
 package com.classes.services.Impl;
 
+import com.classes.enums.ClassStatus;
 import com.classes.services.ClassStatsService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,7 +47,7 @@ public class ClassServiceImpl implements ClassService {
     @Transactional
     @Override
     public ClassResponse createClass(ClassRequest request) {
-        validateTrainerAndLocation(request);
+
         ClassEntity entity = classMapper.toEntity(request);
         TrainerEntity trainer = trainerRepository.findById(request.getTrainerId())
                 .orElseThrow(() -> new IllegalArgumentException("El trainer con ID " + request.getTrainerId() + " no existe"));
@@ -112,15 +113,6 @@ public class ClassServiceImpl implements ClassService {
         repository.deleteById(id);
     }
 
-    private void validateTrainerAndLocation(ClassRequest request) {
-        if (!trainerRepository.existsById(request.getTrainerId())) {
-            throw new IllegalArgumentException("El trainer con ID " + request.getTrainerId() + " no existe");
-        }
-        if (!locationRepository.existsById(request.getLocationId())) {
-            throw new IllegalArgumentException("La ubicación con ID " + request.getLocationId() + " no existe");
-        }
-    }
-
     @Override
     @Transactional(readOnly = true)
     public MonthlyCalendarDTO getMonthlyCalendar(int year, int month) {
@@ -145,5 +137,63 @@ public class ClassServiceImpl implements ClassService {
                 .totalClasses(allClasses.size())
                 .daysWithClasses(daysWithClasses)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ClassResponse startClass(UUID classId) {
+        log.info("Iniciando clase con ID: {}", classId);
+        
+        ClassEntity classEntity = repository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        
+        if (classEntity.getStatus() != ClassStatus.PROGRAMADA) {
+            throw new RuntimeException("La clase debe estar en estado PROGRAMADA para poder iniciarla");
+        }
+        
+        classEntity.setStatus(ClassStatus.EN_PROCESO);
+        ClassEntity saved = repository.save(classEntity);
+        
+        log.info("Clase {} cambiada a estado EN_PROCESO", classId);
+        return classMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public ClassResponse completeClass(UUID classId) {
+        log.info("Completando clase con ID: {}", classId);
+        
+        ClassEntity classEntity = repository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        
+        if (classEntity.getStatus() != ClassStatus.EN_PROCESO) {
+            throw new RuntimeException("La clase debe estar EN_PROCESO para poder completarla");
+        }
+        
+        classEntity.setStatus(ClassStatus.COMPLETADA);
+        ClassEntity saved = repository.save(classEntity);
+        
+        log.info("Clase {} cambiada a estado COMPLETADA", classId);
+        return classMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public ClassResponse cancelClass(UUID classId) {
+        log.info("Cancelando clase con ID: {}", classId);
+        
+        ClassEntity classEntity = repository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+        
+        if (classEntity.getStatus() == ClassStatus.COMPLETADA) {
+            throw new RuntimeException("No se puede cancelar una clase que ya fue completada");
+        }
+        
+        classEntity.setStatus(ClassStatus.CANCELADA);
+        classEntity.setActive(false);
+        ClassEntity saved = repository.save(classEntity);
+        
+        log.info("Clase {} cambiada a estado CANCELADA", classId);
+        return classMapper.toResponse(saved);
     }
 }

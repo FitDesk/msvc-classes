@@ -32,7 +32,7 @@ public class ClassReservationController {
             @RequestBody ClassReservationRequest request,
             Authentication authentication) {
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("🎟️ Usuario {} intentando reservar clase {}", memberId, request.getClassId());
+        log.info("Usuario {} intentando reservar clase {}", memberId, request.getClassId());
         ClassReservationResponse response = reservationService.reserveClass(request, memberId);
         return ResponseEntity.ok(response);
     }
@@ -45,7 +45,7 @@ public class ClassReservationController {
             @PathVariable UUID reservationId,
             Authentication authentication) {
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("❌ Usuario {} cancelando reserva {}", memberId, reservationId);
+        log.info("Usuario {} cancelando reserva {}", memberId, reservationId);
         reservationService.cancelReservation(reservationId, memberId);
         return ResponseEntity.noContent().build();
     }
@@ -59,7 +59,7 @@ public class ClassReservationController {
             Authentication authentication) {
 
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("✅ Usuario {} confirmando asistencia para reserva {}", memberId, reservationId);
+        log.info("Usuario {} confirmando asistencia para reserva {}", memberId, reservationId);
 
         reservationService.confirmAttendance(reservationId, memberId);
         return ResponseEntity.noContent().build();
@@ -73,7 +73,7 @@ public class ClassReservationController {
             Authentication authentication) {
 
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("🏁 Usuario {} completando reserva {}", memberId, reservationId);
+        log.info("Usuario {} completando reserva {}", memberId, reservationId);
 
         reservationService.completeReservation(reservationId, memberId);
         return ResponseEntity.noContent().build();
@@ -87,7 +87,7 @@ public class ClassReservationController {
             Authentication authentication,
             @RequestParam(required = false) Boolean completed) {
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("📋 Usuario {} consultando sus reservas (completed={})", memberId, completed);
+        log.info("Usuario {} consultando sus reservas (completed={})", memberId, completed);
         List<ClassReservationResponse> reservations = reservationService.getReservationsByMember(memberId, completed);
         if (reservations.isEmpty()) {
             return ResponseEntity.noContent().build();
