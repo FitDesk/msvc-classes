@@ -18,8 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class MemberInfoDTO {
-    @JsonProperty("userId")  // msvc-members usa "userId"
-    private UUID id;
+    private UUID userId;
     
     private String firstName;
     private String lastName;
