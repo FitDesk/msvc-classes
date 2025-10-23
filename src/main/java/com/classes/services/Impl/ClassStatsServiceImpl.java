@@ -105,7 +105,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
     private StudentInClassDTO buildStudentDTO(ClassReservation reservation, List<MemberInfoDTO> membersInfo) {
         MemberInfoDTO memberInfo = membersInfo.stream()
-                .filter(m -> m.getId().equals(reservation.getMemberId()))
+                .filter(m -> m.getUserId().equals(reservation.getMemberId()))
                 .findFirst()
                 .orElse(createDefaultMemberInfo(reservation.getMemberId()));
 
@@ -181,7 +181,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
     private MemberInfoDTO createDefaultMemberInfo(UUID memberId) {
         return MemberInfoDTO.builder()
-                .id(memberId)
+                .userId(memberId)
                 .firstName("Usuario")
                 .lastName("Desconocido")
                 .email("no-disponible@email.com")
