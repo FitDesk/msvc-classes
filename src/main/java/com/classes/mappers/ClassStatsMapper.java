@@ -32,6 +32,7 @@ public interface ClassStatsMapper {
     @Mapping(target = "schedule", expression = "java(formatScheduleWithDay(entity))")
     @Mapping(target = "currentStudents", ignore = true) // se calcula en servicio
     @Mapping(target = "students", ignore = true) // se calcula en servicio
+    @Mapping(target = "status", expression = "java(entity.getStatus().name())")
     ClassDetailResponse toClassDetailResponse(ClassEntity entity);
 
 
@@ -40,6 +41,7 @@ public interface ClassStatsMapper {
     @Mapping(target = "schedule", expression = "java(entity.getStartTime() + \" - \" + entity.getEndTime())")
     @Mapping(target = "currentStudents", ignore = true) // se calcula en servicio
     @Mapping(target = "action", ignore = true) // se calcula en servicio
+    @Mapping(target = "status", expression = "java(entity.getStatus().name())")
     CalendarClassDTO toCalendarDTO(ClassEntity entity);
 
     List<CalendarClassDTO> toCalendarDTOList(List<ClassEntity> entities);

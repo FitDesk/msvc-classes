@@ -77,4 +77,31 @@ public class ClassController {
         MonthlyCalendarDTO calendar = classService.getMonthlyCalendar(year, month);
         return ResponseEntity.ok(calendar);
     }
+
+    @Operation(summary = "Iniciar clase", description = "Cambia el estado de la clase de PROGRAMADA a EN_PROCESO")
+    @PatchMapping("/{id}/start")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<ClassResponse> startClass(@PathVariable UUID id) {
+        log.info("Iniciando clase: {}", id);
+        ClassResponse response = classService.startClass(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Completar clase", description = "Cambia el estado de la clase de EN_PROCESO a COMPLETADA")
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<ClassResponse> completeClass(@PathVariable UUID id) {
+        log.info("Completando clase: {}", id);
+        ClassResponse response = classService.completeClass(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Cancelar clase", description = "Cambia el estado de la clase a CANCELADA")
+    @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<ClassResponse> cancelClass(@PathVariable UUID id) {
+        log.info("Cancelando clase: {}", id);
+        ClassResponse response = classService.cancelClass(id);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -58,32 +58,33 @@ public class ClassViewController {
         return ResponseEntity.ok(detail);
     }
 
-    @Operation(summary = "Ver calendario de clases", description = "Vista de calendario para todos")
+    @Operation(summary = "Ver calendario de clases por rango de fechas", description = "Vista de calendario para todos con filtros opcionales. Requiere startDate y endDate.")
     @GetMapping("/calendar")
-    @PreAuthorize("hasRole('USER') or hasRole('TRAINER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
     public ResponseEntity<List<CalendarClassDTO>> getClassesForCalendar(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) UUID locationId) {
         
-        log.info("📅 Consultando clases para calendario");
+        log.info("📅 Consultando clases para calendario entre {} y {} con filtros - Estado: {}, Ubicación: {}", 
+                startDate, endDate, status, locationId);
         
-        if (startDate != null && endDate != null) {
-            List<CalendarClassDTO> classes = classStatsService.getClassesForCalendar(startDate, endDate);
-            return ResponseEntity.ok(classes);
-        } else {
-            List<CalendarClassDTO> classes = classStatsService.getUpcomingClasses();
-            return ResponseEntity.ok(classes);
-        }
-    }
-
-    @Operation(summary = "Ver próximas clases", description = "Lista de clases futuras")
-    @GetMapping("/upcoming")
-    @PreAuthorize("hasRole('USER') or hasRole('TRAINER') or hasRole('ADMIN')")
-    public ResponseEntity<List<CalendarClassDTO>> getUpcomingClasses() {
-        log.info("Consultando próximas clases");
-        List<CalendarClassDTO> classes = classStatsService.getUpcomingClasses();
+        List<CalendarClassDTO> classes = classStatsService.getClassesForCalendar(startDate, endDate, status, locationId);
         return ResponseEntity.ok(classes);
     }
+
+    @Operation(summary = "Ver próximas clases", description = "Lista de clases futuras con filtros opcionales")
+    @GetMapping("/upcoming")
+    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
+    public ResponseEntity<List<CalendarClassDTO>> getUpcomingClasses(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) UUID locationId) {
+        log.info("Consultando próximas clases con filtros - Estado: {}, Ubicación: {}", status, locationId);
+        List<CalendarClassDTO> classes = classStatsService.getUpcomingClasses(status, locationId);
+        return ResponseEntity.ok(classes);
+    }
+
 
     @Operation(summary = "Ver calendario mensual", description = "Vista de calendario por mes con clases agrupadas por fecha")
     @GetMapping("/calendar/monthly")

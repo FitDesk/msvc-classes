@@ -36,4 +36,10 @@ public interface ClassRepository extends JpaRepository<ClassEntity, UUID> {
 
     @Query("SELECT COUNT(c) FROM ClassEntity c WHERE c.trainer.id = :trainerId AND YEAR(c.classDate) = :year AND MONTH(c.classDate) = :month")
     long countByTrainerIdAndMonth(@Param("trainerId") UUID trainerId, @Param("year") int year, @Param("month") int month);
+
+    @Query("SELECT COUNT(c) FROM ClassEntity c WHERE c.trainer.id = :trainerId AND c.status = com.classes.enums.ClassStatus.COMPLETADA")
+    long countCompletedClassesByTrainerId(@Param("trainerId") UUID trainerId);
+
+    @Query("SELECT COUNT(c) FROM ClassEntity c WHERE c.trainer.id = :trainerId AND c.classDate >= :currentDate")
+    long countUpcomingClassesByTrainerId(@Param("trainerId") UUID trainerId, @Param("currentDate") LocalDate currentDate);
 }

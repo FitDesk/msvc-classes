@@ -24,4 +24,10 @@ public interface ClassService {
     void deleteClass(UUID id);
     
     MonthlyCalendarDTO getMonthlyCalendar(int year, int month);
+    
+    ClassResponse startClass(UUID classId);
+    
+    ClassResponse completeClass(UUID classId);
+    
+    ClassResponse cancelClass(UUID classId);
 }

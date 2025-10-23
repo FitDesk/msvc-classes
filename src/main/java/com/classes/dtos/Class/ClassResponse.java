@@ -25,4 +25,5 @@ public class ClassResponse {
     private String schedule;
     private boolean active;
     private String description;
+    private String status;
 }
