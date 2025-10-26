@@ -40,12 +40,17 @@ public class ClassStatsServiceImpl implements ClassStatsService {
         List<ClassEntity> classes = repository.findByTrainerId(trainerId);
         return classes.stream().map(classEntity -> {
             ClassWithStatsResponse response = classStatsMapper.toClassWithStatsResponse(classEntity);
-            long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
-                    classEntity.getId(), ReservationStatus.RESERVADO);
-            response.setCurrentStudents((int) currentStudents);
+            
+            // Contar solo reservas activas (excluir CANCELADO)
+            List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
+            long activeStudents = allReservations.stream()
+                    .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
+                    .count();
+            
+            response.setCurrentStudents((int) activeStudents);
             Double avgAttendance = reservationRepository.calculateAverageAttendanceByClassId(classEntity.getId());
             response.setAverageAttendance(avgAttendance != null ? avgAttendance : 0.0);
-            response.setStatus(determineClassStatus(classEntity, (int) currentStudents));
+            response.setStatus(determineClassStatus(classEntity, (int) activeStudents));
 
             return response;
         }).collect(Collectors.toList());
@@ -60,12 +65,18 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .orElseThrow(() -> new IllegalArgumentException("La clase con ID " + classId + " no existe"));
         ClassDetailResponse response = classStatsMapper.toClassDetailResponse(classEntity);
         List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classId);
-        List<UUID> memberIds = reservations.stream()
+        
+        // Filtrar solo reservas activas (excluir CANCELADO)
+        List<ClassReservation> activeReservations = reservations.stream()
+                .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
+                .collect(Collectors.toList());
+        
+        List<UUID> memberIds = activeReservations.stream()
                 .map(ClassReservation::getMemberId)
                 .distinct()
                 .collect(Collectors.toList());
         
-        log.info("📋 Consultando información de {} miembros: {}", memberIds.size(), memberIds);
+        log.info("📋 Consultando información de {} miembros activos: {}", memberIds.size(), memberIds);
         List<MemberInfoDTO> membersInfo = memberClientService.getMembersInfo(memberIds);
         log.info("📊 Información obtenida de {} miembros", membersInfo.size());
         
@@ -73,7 +84,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
             log.warn("⚠️ No se pudo obtener información de ningún miembro. Usando datos por defecto.");
         }
         
-        List<StudentInClassDTO> students = reservations.stream()
+        List<StudentInClassDTO> students = activeReservations.stream()
                 .map(reservation -> buildStudentDTO(reservation, membersInfo))
                 .collect(Collectors.toList());
 
@@ -169,10 +180,13 @@ public class ClassStatsServiceImpl implements ClassStatsService {
         return classes.stream()
                 .map(classEntity -> {
                     CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
-                    long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
-                            classEntity.getId(), ReservationStatus.RESERVADO);
-                    dto.setCurrentStudents((int) currentStudents);
-                    String action = determineAction(classEntity, (int) currentStudents);
+                    // Contar solo reservas activas (excluir CANCELADO)
+                    List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
+                    long activeStudents = allReservations.stream()
+                            .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
+                            .count();
+                    dto.setCurrentStudents((int) activeStudents);
+                    String action = determineAction(classEntity, (int) activeStudents);
                     dto.setAction(action);
                     return dto;
                 }).collect(Collectors.toList());
@@ -198,10 +212,13 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 })
                 .map(classEntity -> {
                     CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
-                    long currentStudents = reservationRepository.countByClassEntityIdAndStatus(
-                            classEntity.getId(), ReservationStatus.RESERVADO);
-                    dto.setCurrentStudents((int) currentStudents);
-                    String action = determineAction(classEntity, (int) currentStudents);
+                    // Contar solo reservas activas (excluir CANCELADO)
+                    List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
+                    long activeStudents = allReservations.stream()
+                            .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
+                            .count();
+                    dto.setCurrentStudents((int) activeStudents);
+                    String action = determineAction(classEntity, (int) activeStudents);
                     dto.setAction(action);
                     return dto;
                 }).collect(Collectors.toList());
