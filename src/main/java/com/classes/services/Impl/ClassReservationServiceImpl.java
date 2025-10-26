@@ -72,7 +72,7 @@ public class ClassReservationServiceImpl implements ClassReservationService {
         reservation.setStatus(ReservationStatus.CANCELADO);
         reservationRepository.save(reservation);
 
-        // Promover primer usuario en lista de espera
+
         List<ClassReservation> waitingList = reservationRepository.findByClassEntityId(reservation.getClassEntity().getId())
                 .stream()
                 .filter(r -> r.getStatus() == ReservationStatus.LISTA_ESPERA)
@@ -113,13 +113,14 @@ public class ClassReservationServiceImpl implements ClassReservationService {
             throw new RuntimeException("No puedes completar la reserva de otro usuario");
         }
 
-        LocalDateTime classEnd = LocalDateTime.of(
+
+        LocalDateTime classStart = LocalDateTime.of(
                 reservation.getClassEntity().getClassDate(),
-                reservation.getClassEntity().getEndTime()
+                reservation.getClassEntity().getStartTime()
         );
 
-        if (classEnd.isAfter(LocalDateTime.now())) {
-            throw new RuntimeException("La clase aún no ha terminado, no se puede completar");
+        if (classStart.isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("La clase aún no ha iniciado, no se puede completar");
         }
 
         reservation.setStatus(ReservationStatus.COMPLETADO);
@@ -135,7 +136,7 @@ public class ClassReservationServiceImpl implements ClassReservationService {
                 .filter(r -> {
                     if (completed == null) return true;
 
-                    // Combinar fecha y hora en LocalDateTime
+
                     LocalDateTime classEnd = LocalDateTime.of(
                             r.getClassEntity().getClassDate(),
                             r.getClassEntity().getEndTime()
@@ -146,6 +147,41 @@ public class ClassReservationServiceImpl implements ClassReservationService {
                 .sorted(Comparator.comparing(r ->
                         LocalDateTime.of(r.getClassEntity().getClassDate(), r.getClassEntity().getStartTime())
                 ))
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<ClassReservationResponse> getReservationsByMemberAndStatus(UUID memberId, String status) {
+        List<ClassReservation> reservations = reservationRepository.findByMemberId(memberId);
+        LocalDateTime now = LocalDateTime.now();
+
+        return reservations.stream()
+                .filter(r -> {
+                    LocalDateTime classDateTime = LocalDateTime.of(
+                            r.getClassEntity().getClassDate(),
+                            r.getClassEntity().getStartTime()
+                    );
+
+                    return switch (status.toUpperCase()) {
+                        case "PROXIMAS" ->
+                            classDateTime.isAfter(now) &&
+                            (r.getStatus() == ReservationStatus.RESERVADO ||
+                             r.getStatus() == ReservationStatus.PENDIENTE);
+
+                        case "PENDIENTES" ->
+                            classDateTime.isBefore(now) &&
+                            r.getStatus() == ReservationStatus.PENDIENTE;
+
+                        case "COMPLETADAS" ->
+                            r.getStatus() == ReservationStatus.COMPLETADO;
+
+                        default -> false;
+                    };
+                })
+                .sorted(Comparator.comparing((ClassReservation r) ->
+                        LocalDateTime.of(r.getClassEntity().getClassDate(), r.getClassEntity().getStartTime())
+                ).reversed())
                 .map(mapper::toResponse)
                 .toList();
     }

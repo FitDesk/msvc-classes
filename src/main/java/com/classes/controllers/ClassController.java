@@ -2,7 +2,9 @@ package com.classes.controllers;
 
 import com.classes.dtos.Class.ClassRequest;
 import com.classes.dtos.Class.ClassResponse;
+import com.classes.dtos.Class.ClassDetailResponse;
 import com.classes.dtos.Class.MonthlyCalendarDTO;
+import com.classes.dtos.Class.UpdateAttendanceRequest;
 import com.classes.services.ClassService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -103,5 +105,25 @@ public class ClassController {
         log.info("Cancelando clase: {}", id);
         ClassResponse response = classService.cancelClass(id);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Obtener detalles de clase", description = "Obtiene información completa de la clase incluyendo lista de estudiantes")
+    @GetMapping("/{id}/details")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<ClassDetailResponse> getClassDetails(@PathVariable UUID id) {
+        log.info("Obteniendo detalles de clase: {}", id);
+        ClassDetailResponse response = classService.getClassDetails(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Actualizar estado de asistencia", description = "Marca la asistencia de un estudiante: PRESENTE, AUSENTE, TARDE, JUSTIFICADO")
+    @PatchMapping("/reservations/{reservationId}/attendance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<String> updateAttendanceStatus(
+            @PathVariable UUID reservationId,
+            @RequestBody UpdateAttendanceRequest request) {
+        log.info("Actualizando asistencia para reserva: {} -> {}", reservationId, request.getAttendanceStatus());
+        classService.updateAttendanceStatus(reservationId, request.getAttendanceStatus());
+        return ResponseEntity.ok("Estado de asistencia actualizado correctamente");
     }
 }

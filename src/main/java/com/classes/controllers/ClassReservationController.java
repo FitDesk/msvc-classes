@@ -65,21 +65,6 @@ public class ClassReservationController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Marcar una reserva como completada")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    @PutMapping("/{reservationId}/complete")
-    public ResponseEntity<Void> completeReservation(
-            @PathVariable UUID reservationId,
-            Authentication authentication) {
-
-        UUID memberId = authorizationService.getUserId(authentication);
-        log.info("Usuario {} completando reserva {}", memberId, reservationId);
-
-        reservationService.completeReservation(reservationId, memberId);
-        return ResponseEntity.noContent().build();
-    }
-
-
     @Operation(summary = "Obtener mis reservas activas o completadas")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/my")
@@ -94,4 +79,21 @@ public class ClassReservationController {
         }
         return ResponseEntity.ok(reservations);
     }
+
+    @Operation(summary = "Obtener mis reservas filtradas por estado", 
+               description = "Filtra por: PROXIMAS (futuras), PENDIENTES (no completadas), COMPLETADAS")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @GetMapping("/my/status/{status}")
+    public ResponseEntity<List<ClassReservationResponse>> getMyReservationsByStatus(
+            Authentication authentication,
+            @PathVariable String status) {
+        UUID memberId = authorizationService.getUserId(authentication);
+        log.info("Usuario {} consultando reservas con estado: {}", memberId, status);
+        List<ClassReservationResponse> reservations = reservationService.getReservationsByMemberAndStatus(memberId, status);
+        if (reservations.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(reservations);
+    }
+
 }
