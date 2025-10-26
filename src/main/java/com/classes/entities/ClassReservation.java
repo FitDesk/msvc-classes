@@ -1,5 +1,6 @@
 package com.classes.entities;
 
+import com.classes.enums.AttendanceStatus;
 import com.classes.enums.ReservationStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,11 +28,17 @@ public class ClassReservation {
     private UUID memberId;
 
     @Enumerated(EnumType.STRING)
-    private ReservationStatus status; // RESERVADO, LISTA_ESPERA, CANCELADO
+    private ReservationStatus status;
     private LocalDateTime reservedAt;
+    
     @Column(name = "attended")
     private Boolean attended = false;
-
-
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "attendance_status")
+    private AttendanceStatus attendanceStatus;
+    
+    @Column(name = "check_in_time")
+    private LocalDateTime checkInTime;
 
 }

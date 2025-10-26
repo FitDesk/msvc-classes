@@ -36,7 +36,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
     @Override
     @Transactional(readOnly = true)
     public List<ClassWithStatsResponse> getClassesWithStatsByTrainer(UUID trainerId) {
-        log.info("📊 Obteniendo clases con estadísticas para el trainer {}", trainerId);
+        log.info("Obteniendo clases con estadísticas para el trainer {}", trainerId);
         List<ClassEntity> classes = repository.findByTrainerId(trainerId);
         return classes.stream().map(classEntity -> {
             ClassWithStatsResponse response = classStatsMapper.toClassWithStatsResponse(classEntity);
@@ -134,7 +134,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
         long totalClasses = memberReservations.size();
 
-        // ✅ Cambiado: uso de Boolean.TRUE.equals() para evitar errores por null
+
         long attendedClasses = memberReservations.stream()
                 .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .count();
@@ -144,7 +144,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
         String initials = getInitials(memberInfo.getFirstName(), memberInfo.getLastName());
         
-        // Extraer tipo de membresía
+
         String membershipType = "N/A";
         if (memberInfo.getMembershipType() != null) {
             membershipType = memberInfo.getMembershipType().getType();
@@ -157,6 +157,13 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .avatarInitials(initials)
                 .status(memberInfo.getStatus() != null ? memberInfo.getStatus() : "DESCONOCIDO")
                 .membershipType(membershipType)
+                // Mapear asistencia desde la reserva para que el detalle estadístico refleje los cambios
+                .attendanceStatus(
+                        reservation.getAttendanceStatus() != null
+                                ? reservation.getAttendanceStatus().name()
+                                : null
+                )
+                .checkInTime(reservation.getCheckInTime())
                 .attendancePercentage(attendancePercentage)
                 .totalClasses((int) totalClasses)
                 .lastAccess(memberInfo.getLastAccess())

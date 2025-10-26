@@ -13,6 +13,7 @@ public interface ClassReservationService {
     List<ClassReservationResponse> getReservationsByMember(UUID memberId, Boolean completed);
     void confirmAttendance(UUID reservationId, UUID memberId);
     void completeReservation(UUID reservationId, UUID memberId);
+    List<ClassReservationResponse> getReservationsByMemberAndStatus(UUID memberId, String status);
 
 }
 

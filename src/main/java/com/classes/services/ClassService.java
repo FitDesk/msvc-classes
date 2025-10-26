@@ -30,4 +30,8 @@ public interface ClassService {
     ClassResponse completeClass(UUID classId);
     
     ClassResponse cancelClass(UUID classId);
+    
+    ClassDetailResponse getClassDetails(UUID classId);
+    
+    void updateAttendanceStatus(UUID reservationId, String attendanceStatus);
 }
