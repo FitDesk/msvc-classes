@@ -7,6 +7,7 @@ import com.classes.dtos.Class.StudentInClassDTO;
 import com.classes.dtos.external.MemberInfoDTO;
 import com.classes.entities.ClassEntity;
 import com.classes.entities.ClassReservation;
+import com.classes.enums.ClassStatus;
 import com.classes.enums.ReservationStatus;
 import com.classes.mappers.ClassStatsMapper;
 import com.classes.repositories.ClassRepository;
@@ -232,6 +233,27 @@ public class ClassStatsServiceImpl implements ClassStatsService {
     }
 
     private String determineClassStatus(ClassEntity classEntity, int currentStudents) {
+     
+        if (classEntity.getStatus() != null) {
+            switch (classEntity.getStatus()) {
+                case COMPLETADA:
+                    return "COMPLETADA";
+                case CANCELADA:
+                    return "Cancelada";
+                case EN_PROCESO:
+                    return "En Proceso";
+                case PROGRAMADA:
+                  
+                    if (currentStudents >= classEntity.getMaxCapacity()) {
+                        return "Llena";
+                    }
+                    return "Activa";
+                default:
+                    break;
+            }
+        }
+        
+     
         if (!classEntity.isActive()) {
             return "Cancelada";
         }

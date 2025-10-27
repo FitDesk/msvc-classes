@@ -27,11 +27,13 @@ public interface ClassService {
     
     ClassResponse startClass(UUID classId);
     
-    ClassResponse completeClass(UUID classId);
+    ClassResponse completeClass(UUID classId, java.util.Map<String, String> attendanceData);
     
     ClassResponse cancelClass(UUID classId);
     
     ClassDetailResponse getClassDetails(UUID classId);
     
     void updateAttendanceStatus(UUID reservationId, String attendanceStatus);
+    
+    void saveAttendanceForClass(UUID classId, java.util.Map<String, String> attendanceData);
 }

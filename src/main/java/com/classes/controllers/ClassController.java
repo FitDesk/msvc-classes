@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -92,9 +93,11 @@ public class ClassController {
     @Operation(summary = "Completar clase", description = "Cambia el estado de la clase de EN_PROCESO a COMPLETADA")
     @PatchMapping("/{id}/complete")
     @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
-    public ResponseEntity<ClassResponse> completeClass(@PathVariable UUID id) {
+    public ResponseEntity<ClassResponse> completeClass(
+            @PathVariable UUID id,
+            @RequestBody(required = false) Map<String, String> attendanceData) {
         log.info("Completando clase: {}", id);
-        ClassResponse response = classService.completeClass(id);
+        ClassResponse response = classService.completeClass(id, attendanceData);
         return ResponseEntity.ok(response);
     }
 
@@ -125,5 +128,16 @@ public class ClassController {
         log.info("Actualizando asistencia para reserva: {} -> {}", reservationId, request.getAttendanceStatus());
         classService.updateAttendanceStatus(reservationId, request.getAttendanceStatus());
         return ResponseEntity.ok("Estado de asistencia actualizado correctamente");
+    }
+
+    @Operation(summary = "Guardar asistencia de una clase", description = "Guarda la asistencia de los estudiantes sin completar la clase")
+    @PostMapping("/{id}/save-attendance")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER')")
+    public ResponseEntity<String> saveAttendance(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> attendanceData) {
+        log.info("Guardando asistencia para la clase: {}", id);
+        classService.saveAttendanceForClass(id, attendanceData);
+        return ResponseEntity.ok("Asistencia guardada correctamente");
     }
 }

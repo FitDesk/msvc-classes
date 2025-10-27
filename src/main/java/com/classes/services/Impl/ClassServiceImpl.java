@@ -181,7 +181,7 @@ public class ClassServiceImpl implements ClassService {
 
     @Override
     @Transactional
-    public ClassResponse completeClass(UUID classId) {
+    public ClassResponse completeClass(UUID classId, Map<String, String> attendanceData) {
         log.info("Completando clase con ID: {}", classId);
 
         ClassEntity classEntity = repository.findById(classId)
@@ -196,15 +196,54 @@ public class ClassServiceImpl implements ClassService {
 
 
         List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classId);
-        log.info("🔍 DEBUG - Procesando {} reservas para la clase {}", reservations.size(), classId);
+        log.info("DEBUG - Procesando {} reservas para la clase {}", reservations.size(), classId);
         
+        
+        if (attendanceData != null && !attendanceData.isEmpty()) {
+            log.info("Actualizando estados de asistencia desde los datos recibidos");
+            log.info("Datos recibidos: {}", attendanceData);
+            
+            for (ClassReservation reservation : reservations) {
+                String memberIdStr = reservation.getMemberId().toString();
+                log.info("Verificando reserva {} con memberId: {}", reservation.getId(), memberIdStr);
+                log.info("attendanceData contiene memberId {}: {}", memberIdStr, attendanceData.containsKey(memberIdStr));
+                
+                if (attendanceData.containsKey(memberIdStr)) {
+                    String attendanceStatusStr = attendanceData.get(memberIdStr);
+                    try {
+                        AttendanceStatus status = AttendanceStatus.valueOf(attendanceStatusStr.toUpperCase());
+                        reservation.setAttendanceStatus(status);
+                        
+                    
+                        if (status == AttendanceStatus.PRESENTE || status == AttendanceStatus.TARDE) {
+                            reservation.setCheckInTime(LocalDateTime.now());
+                            reservation.setAttended(true);
+                        } else {
+                            reservation.setAttended(false);
+                        }
+                        
+                        log.info("Reserva {} actualizada con asistencia: {}", reservation.getId(), status);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Estado de asistencia inválido para reserva {}: {}", reservation.getId(), attendanceStatusStr);
+                    }
+                } else {
+                    log.info("No se encontró memberId {} en attendanceData. Keys disponibles: {}", memberIdStr, attendanceData.keySet());
+                }
+            }
+            
+          
+            reservationRepository.saveAll(reservations);
+        }
+        
+     
         for (ClassReservation reservation : reservations) {
-            log.info("🔍 DEBUG - Reserva {}: status={}, attendanceStatus={}, memberId={}", 
+            log.info("DEBUG - Reserva {}: status={}, attendanceStatus={}, memberId={}", 
                 reservation.getId(), 
                 reservation.getStatus(),
                 reservation.getAttendanceStatus(),
                 reservation.getMemberId());
 
+        
             if (reservation.getAttendanceStatus() == AttendanceStatus.PRESENTE ||
                 reservation.getAttendanceStatus() == AttendanceStatus.TARDE ||
                 reservation.getAttendanceStatus() == AttendanceStatus.JUSTIFICADO) {
@@ -222,6 +261,7 @@ public class ClassServiceImpl implements ClassService {
             }
         }
         
+    
         reservationRepository.saveAll(reservations);
         log.info("Actualizadas {} reservas según asistencia", reservations.size());
 
@@ -361,6 +401,55 @@ public class ClassServiceImpl implements ClassService {
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Estado de asistencia inválido: " + attendanceStatus +
                     ". Valores permitidos: PRESENTE, AUSENTE, TARDE, JUSTIFICADO");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void saveAttendanceForClass(UUID classId, Map<String, String> attendanceData) {
+        log.info("Guardando asistencia para la clase: {}", classId);
+
+        ClassEntity classEntity = repository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+
+        if (classEntity.getStatus() != ClassStatus.EN_PROCESO) {
+            throw new RuntimeException("La clase debe estar EN_PROCESO para poder guardar asistencia");
+        }
+
+        List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classId);
+        log.info("Procesando {} reservas para guardar asistencia", reservations.size());
+
+        if (attendanceData != null && !attendanceData.isEmpty()) {
+            log.info("Guardando estados de asistencia: {}", attendanceData);
+
+            for (ClassReservation reservation : reservations) {
+                String memberIdStr = reservation.getMemberId().toString();
+                log.info("Verificando reserva {} con memberId: {}", reservation.getId(), memberIdStr);
+
+                if (attendanceData.containsKey(memberIdStr)) {
+                    String attendanceStatusStr = attendanceData.get(memberIdStr);
+                    try {
+                        AttendanceStatus status = AttendanceStatus.valueOf(attendanceStatusStr.toUpperCase());
+                        reservation.setAttendanceStatus(status);
+
+                        if (status == AttendanceStatus.PRESENTE || status == AttendanceStatus.TARDE) {
+                            reservation.setCheckInTime(LocalDateTime.now());
+                            reservation.setAttended(true);
+                        } else {
+                            reservation.setAttended(false);
+                        }
+
+                        log.info("Reserva {} guardada con asistencia: {}", reservation.getId(), status);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Estado de asistencia inválido para reserva {}: {}", reservation.getId(), attendanceStatusStr);
+                    }
+                }
+            }
+
+            reservationRepository.saveAll(reservations);
+            log.info("Asistencia guardada correctamente para {} reservas", reservations.size());
+        } else {
+            log.warn("No se recibieron datos de asistencia");
         }
     }
 }
