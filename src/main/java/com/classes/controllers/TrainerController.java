@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,7 @@ import java.util.UUID;
 public class TrainerController {
 
     private final TrainerService trainerService;
+    private final AuthorizationService authorizationService;
 
         @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
         @GetMapping
@@ -85,12 +87,15 @@ public class TrainerController {
         }
 
 
-        @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
+        @PreAuthorize("hasRole('TRAINER')")
         @PutMapping("/{id}/profile-image")
         public ResponseEntity<ImageResponseDTO> updateTrainerProfileImage(
-                @PathVariable UUID id,
-                @RequestParam("file") MultipartFile file) throws IOException {
-            return ResponseEntity.ok(trainerService.updateTrainerProfile(id, file));
+                @RequestParam("file") MultipartFile file,
+                Authentication authentication) throws IOException {
+            UUID trainerId = authorizationService.getUserId(authentication);
+
+            ImageResponseDTO response = trainerService.updateTrainerProfile(trainerId, file);
+            return ResponseEntity.ok(response);
         }
 
         @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
@@ -104,16 +109,19 @@ public class TrainerController {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(null);
             } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 si falla la eliminación de archivos
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         }
 
-        @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
-        @DeleteMapping("/{id}/profile-image")
-        public ResponseEntity<Void> deleteTrainerProfileImage(@PathVariable UUID id) {
-            boolean deleted = trainerService.deleteTrainerProfileImage(id);
-            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
-        }
+
+    @DeleteMapping("/profile-image")
+    @PreAuthorize("hasRole('TRAINER') or hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteTrainerProfileImage(Authentication authentication) {
+        UUID trainerId = authorizationService.getUserId(authentication);
+        log.info("Trainer {} eliminando su imagen de perfil", trainerId);
+        boolean deleted = trainerService.deleteTrainerProfileImage(trainerId);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
+    }
 
     }
 
