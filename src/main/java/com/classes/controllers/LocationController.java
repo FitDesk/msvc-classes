@@ -59,7 +59,7 @@ public class LocationController {
     @PreAuthorize("@authorizationServiceImpl.canAccessResource(#id,authentication)")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        locationService.delete(id); // Validación interna
+        locationService.delete(id); 
         return ResponseEntity.noContent().build();
     }
 }

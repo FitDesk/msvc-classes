@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Data
 public class LocationResponse {
-    private UUID id; // si tienes un ID generado
+    private UUID id; 
     private String name;
     private String description;
     private int ability;

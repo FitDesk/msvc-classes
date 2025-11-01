@@ -9,10 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * DTO para recibir información del microservicio de Members
- * Mapea la respuesta de msvc-members con los nombres correctos de campos
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,10 +23,10 @@ public class MemberInfoDTO {
     private String phone;
     private String initials;
     private String profileImageUrl;
-    
-    private String status; // "ACTIVO", "INACTIVO", "SUSPENDIDO"
-    
-    @JsonProperty("membership")  // msvc-members usa "membership"
+
+    private String status;
+
+    @JsonProperty("membership")
     private MembershipDTO membershipType;
     
     private LocalDateTime lastAccess;

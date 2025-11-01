@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class StudentTrendDTO {
-    private String week; // "Sem 1", "Sem 2", etc.
+    private String week; 
     private int activeStudents;
     private int inactiveStudents;
-    private String label; // Para el tooltip del gráfico
+    private String label;
 }

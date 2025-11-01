@@ -12,12 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class TrainerDashboardDTO {
-    private int totalClasses; // Total de clases asignadas al trainer
-    private int completedClasses; // Clases con status COMPLETADA
-    private int totalStudents; // Total de estudiantes únicos en todas las clases
-    private double averageAttendance; // Porcentaje promedio
-    private int upcomingClasses; // Próximas clases (futuras)
+    private int totalClasses; 
+    private int completedClasses;
+    private int totalStudents;
+    private double averageAttendance;
+    private int upcomingClasses;
     private int classesThisMonth;
-    private double attendanceChange; // Cambio porcentual respecto al mes anterior
-    private List<StudentTrendDTO> studentTrends; // Tendencia semanal de estudiantes
+    private double attendanceChange;
+    private List<StudentTrendDTO> studentTrends;
 }

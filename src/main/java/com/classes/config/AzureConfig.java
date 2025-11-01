@@ -33,7 +33,6 @@ public class AzureConfig {
 
         BlobContainerClient containerClient = serviceClient.getBlobContainerClient(containerName);
 
-        // Crear el contenedor si no existe y configurar acceso público
         if (!containerClient.exists()) {
             containerClient.create();
             containerClient.setAccessPolicy(PublicAccessType.BLOB, null);

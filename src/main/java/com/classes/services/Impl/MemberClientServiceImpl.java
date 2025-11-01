@@ -16,31 +16,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class MemberClientServiceImpl implements MemberClientService {
-    
+
     private final MemberFeignClient memberFeignClient;
-    
+
     @Override
     public MemberInfoDTO getMemberInfo(UUID memberId) {
         try {
-            log.info("🔗 Consultando información del miembro {} usando Feign", memberId);
+            log.info(" Consultando información del miembro {} usando Feign", memberId);
             MemberInfoDTO result = memberFeignClient.getMemberInfo(memberId);
-            log.info("✅ Información recibida: {} {}", result.getFirstName(), result.getLastName());
+            log.info(" Información recibida: {} {}", result.getFirstName(), result.getLastName());
             return result;
         } catch (FeignException.NotFound e) {
-            log.error("❌ Miembro {} no encontrado en msvc-members (404)", memberId);
+            log.error(" Miembro {} no encontrado en msvc-members (404)", memberId);
             return null;
         } catch (FeignException e) {
-            log.error("❌ Error Feign al consultar miembro {}: {} - {}",
+            log.error(" Error Feign al consultar miembro {}: {} - {}",
                     memberId, e.status(), e.getMessage());
-            log.error("❌ Response body: {}", e.contentUTF8());
+            log.error(" Response body: {}", e.contentUTF8());
             return null;
         } catch (Exception e) {
-            log.error("❌ Error inesperado al consultar miembro {}: {}",
+            log.error(" Error inesperado al consultar miembro {}: {}",
                     memberId, e.getMessage(), e);
             return null;
         }
     }
-    
+
     @Override
     public List<MemberInfoDTO> getMembersInfo(List<UUID> memberIds) {
         List<MemberInfoDTO> members = new ArrayList<>();

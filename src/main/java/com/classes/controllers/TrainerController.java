@@ -103,7 +103,7 @@ public class TrainerController {
         public ResponseEntity<Void> deleteTrainer(@PathVariable UUID id) {
             try {
                 trainerService.deleteTrainer(id);
-                return ResponseEntity.noContent().build(); // 204 No Content si se eliminó correctamente
+                return ResponseEntity.noContent().build(); 
             } catch (EntityNotFoundException e) {
                 return ResponseEntity.notFound().build();
             } catch (IllegalArgumentException e) {

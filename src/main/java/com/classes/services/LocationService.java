@@ -16,6 +16,5 @@ public interface LocationService {
 
     LocationResponse findById(UUID id);
 
-    // Paginación + filtros
     Page<LocationResponse> findAll(int page, int size, String search, Boolean active);
 }

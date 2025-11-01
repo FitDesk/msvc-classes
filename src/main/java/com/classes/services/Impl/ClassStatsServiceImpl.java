@@ -7,7 +7,6 @@ import com.classes.dtos.Class.StudentInClassDTO;
 import com.classes.dtos.external.MemberInfoDTO;
 import com.classes.entities.ClassEntity;
 import com.classes.entities.ClassReservation;
-import com.classes.enums.ClassStatus;
 import com.classes.enums.ReservationStatus;
 import com.classes.mappers.ClassStatsMapper;
 import com.classes.repositories.ClassRepository;
@@ -41,13 +40,12 @@ public class ClassStatsServiceImpl implements ClassStatsService {
         List<ClassEntity> classes = repository.findByTrainerId(trainerId);
         return classes.stream().map(classEntity -> {
             ClassWithStatsResponse response = classStatsMapper.toClassWithStatsResponse(classEntity);
-            
-            // Contar solo reservas activas (excluir CANCELADO)
+
             List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
             long activeStudents = allReservations.stream()
                     .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
                     .count();
-            
+
             response.setCurrentStudents((int) activeStudents);
             Double avgAttendance = reservationRepository.calculateAverageAttendanceByClassId(classEntity.getId());
             response.setAverageAttendance(avgAttendance != null ? avgAttendance : 0.0);
@@ -66,25 +64,24 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .orElseThrow(() -> new IllegalArgumentException("La clase con ID " + classId + " no existe"));
         ClassDetailResponse response = classStatsMapper.toClassDetailResponse(classEntity);
         List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classId);
-        
-        // Filtrar solo reservas activas (excluir CANCELADO)
+
         List<ClassReservation> activeReservations = reservations.stream()
                 .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
                 .collect(Collectors.toList());
-        
+
         List<UUID> memberIds = activeReservations.stream()
                 .map(ClassReservation::getMemberId)
                 .distinct()
                 .collect(Collectors.toList());
-        
+
         log.info("📋 Consultando información de {} miembros activos: {}", memberIds.size(), memberIds);
         List<MemberInfoDTO> membersInfo = memberClientService.getMembersInfo(memberIds);
         log.info("📊 Información obtenida de {} miembros", membersInfo.size());
-        
+
         if (membersInfo.isEmpty() && !memberIds.isEmpty()) {
             log.warn("⚠️ No se pudo obtener información de ningún miembro. Usando datos por defecto.");
         }
-        
+
         List<StudentInClassDTO> students = activeReservations.stream()
                 .map(reservation -> buildStudentDTO(reservation, membersInfo))
                 .collect(Collectors.toList());
@@ -97,8 +94,9 @@ public class ClassStatsServiceImpl implements ClassStatsService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate, String status, UUID locationId) {
-        log.info("Obteniendo clases para calendario entre {} y {} con filtros - Estado: {}, Ubicación: {}", 
+    public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate, String status,
+            UUID locationId) {
+        log.info("Obteniendo clases para calendario entre {} y {} con filtros - Estado: {}, Ubicación: {}",
                 startDate, endDate, status, locationId);
 
         List<ClassEntity> classes = repository.findByClassDateBetween(startDate, endDate);
@@ -114,7 +112,6 @@ public class ClassStatsServiceImpl implements ClassStatsService {
         return mapToCalendarDTOs(classes, status, locationId);
     }
 
-    // Métodos sobrecargados sin filtros (para uso interno)
     @Override
     @Transactional(readOnly = true)
     public List<CalendarClassDTO> getClassesForCalendar(LocalDate startDate, LocalDate endDate) {
@@ -133,29 +130,25 @@ public class ClassStatsServiceImpl implements ClassStatsService {
         return mapToCalendarDTOs(classes);
     }
 
-    // ==================== MÉTODOS PRIVADOS ====================
-
     private StudentInClassDTO buildStudentDTO(ClassReservation reservation, List<MemberInfoDTO> membersInfo) {
         MemberInfoDTO memberInfo = membersInfo.stream()
                 .filter(m -> m.getUserId().equals(reservation.getMemberId()))
                 .findFirst()
                 .orElse(createDefaultMemberInfo(reservation.getMemberId()));
 
-        List<ClassReservation> memberReservations =
-                reservationRepository.findByMemberId(reservation.getMemberId());
+        List<ClassReservation> memberReservations = reservationRepository.findByMemberId(reservation.getMemberId());
 
         long totalClasses = memberReservations.size();
-
 
         long attendedClasses = memberReservations.stream()
                 .filter(r -> Boolean.TRUE.equals(r.getAttended()))
                 .count();
 
         double attendancePercentage = totalClasses > 0
-                ? (attendedClasses * 100.0 / totalClasses) : 0.0;
+                ? (attendedClasses * 100.0 / totalClasses)
+                : 0.0;
 
         String initials = getInitials(memberInfo.getFirstName(), memberInfo.getLastName());
-        
 
         String membershipType = "N/A";
         if (memberInfo.getMembershipType() != null) {
@@ -169,12 +162,10 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .avatarInitials(initials)
                 .status(memberInfo.getStatus() != null ? memberInfo.getStatus() : "DESCONOCIDO")
                 .membershipType(membershipType)
-                // Mapear asistencia desde la reserva para que el detalle estadístico refleje los cambios
                 .attendanceStatus(
                         reservation.getAttendanceStatus() != null
                                 ? reservation.getAttendanceStatus().name()
-                                : null
-                )
+                                : null)
                 .checkInTime(reservation.getCheckInTime())
                 .attendancePercentage(attendancePercentage)
                 .totalClasses((int) totalClasses)
@@ -183,13 +174,12 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .build();
     }
 
-    // Método sin filtros (para uso interno)
     private List<CalendarClassDTO> mapToCalendarDTOs(List<ClassEntity> classes) {
         return classes.stream()
                 .map(classEntity -> {
                     CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
-                    // Contar solo reservas activas (excluir CANCELADO)
-                    List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
+                    List<ClassReservation> allReservations = reservationRepository
+                            .findByClassEntityId(classEntity.getId());
                     long activeStudents = allReservations.stream()
                             .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
                             .count();
@@ -200,17 +190,14 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 }).collect(Collectors.toList());
     }
 
-    // Método con filtros (para endpoints con filtros)
     private List<CalendarClassDTO> mapToCalendarDTOs(List<ClassEntity> classes, String status, UUID locationId) {
         return classes.stream()
                 .filter(classEntity -> {
-                    // Filtrar por estado si se proporciona
                     if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("TODOS")) {
                         if (!classEntity.getStatus().name().equalsIgnoreCase(status)) {
                             return false;
                         }
                     }
-                    // Filtrar por ubicación si se proporciona
                     if (locationId != null) {
                         if (!classEntity.getLocation().getId().equals(locationId)) {
                             return false;
@@ -220,8 +207,8 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 })
                 .map(classEntity -> {
                     CalendarClassDTO dto = classStatsMapper.toCalendarDTO(classEntity);
-                    // Contar solo reservas activas (excluir CANCELADO)
-                    List<ClassReservation> allReservations = reservationRepository.findByClassEntityId(classEntity.getId());
+                    List<ClassReservation> allReservations = reservationRepository
+                            .findByClassEntityId(classEntity.getId());
                     long activeStudents = allReservations.stream()
                             .filter(r -> r.getStatus() != ReservationStatus.CANCELADO)
                             .count();
@@ -233,7 +220,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
     }
 
     private String determineClassStatus(ClassEntity classEntity, int currentStudents) {
-     
+
         if (classEntity.getStatus() != null) {
             switch (classEntity.getStatus()) {
                 case COMPLETADA:
@@ -243,7 +230,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 case EN_PROCESO:
                     return "En Proceso";
                 case PROGRAMADA:
-                  
+
                     if (currentStudents >= classEntity.getMaxCapacity()) {
                         return "Llena";
                     }
@@ -252,8 +239,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                     break;
             }
         }
-        
-     
+
         if (!classEntity.isActive()) {
             return "Cancelada";
         }
@@ -283,7 +269,7 @@ public class ClassStatsServiceImpl implements ClassStatsService {
                 .lastName("Desconocido")
                 .email("no-disponible@email.com")
                 .status("DESCONOCIDO")
-                .membershipType(null)  // membership es null por defecto
+                .membershipType(null) 
                 .build();
     }
 

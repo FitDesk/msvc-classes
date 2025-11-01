@@ -31,9 +31,9 @@ public class ClassWithStatsResponse {
     
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
-    
-    private String schedule; // "Lun 08:00 - 09:00"
-    private double averageAttendance; // Porcentaje promedio de asistencia
+
+    private String schedule;
+    private double averageAttendance;
     private boolean active;
     private String status;
 }

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ImageResponseDTO {
     private String fileName;
     private String fileUrl;
-    private String fileId; // publicId en Cloudinary
+    private String fileId; 
     private String format;
     private Long size;
     private Integer width;

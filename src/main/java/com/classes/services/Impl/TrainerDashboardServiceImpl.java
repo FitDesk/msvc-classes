@@ -21,26 +21,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class TrainerDashboardServiceImpl implements TrainerDashboardService {
-    
+
     private final ClassRepository classRepository;
     private final ClassReservationRepository reservationRepository;
-    
+
     @Override
     @Transactional(readOnly = true)
     public TrainerDashboardDTO getDashboardForTrainer(UUID trainerId) {
-        log.info("📊 Generando dashboard para el trainer {}", trainerId);
-        
-        // 🔹 Total de clases asignadas al trainer
+
         List<ClassEntity> trainerClasses = classRepository.findByTrainerId(trainerId);
         int totalClasses = trainerClasses.size();
-        
-        // 🔹 Clases completadas (status = COMPLETADA)
+
         long completedClasses = classRepository.countCompletedClassesByTrainerId(trainerId);
-        
-        // 🔹 Próximas clases (futuras)
+
         long upcomingClasses = classRepository.countUpcomingClassesByTrainerId(trainerId, LocalDate.now());
-        
-        // 🔹 Total de estudiantes únicos en todas las clases del trainer
+
         Set<UUID> uniqueStudents = new HashSet<>();
         for (ClassEntity classEntity : trainerClasses) {
             List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classEntity.getId());
@@ -65,7 +60,7 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
         }
 
         List<StudentTrendDTO> studentTrends = calculateStudentTrends(trainerClasses);
-        
+
         return TrainerDashboardDTO.builder()
                 .totalClasses(totalClasses)
                 .completedClasses((int) completedClasses)
@@ -77,7 +72,7 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
                 .studentTrends(studentTrends)
                 .build();
     }
-    
+
     private List<StudentTrendDTO> calculateStudentTrends(List<ClassEntity> classes) {
         Map<Integer, Set<UUID>> activeByWeek = new HashMap<>();
         Map<Integer, Set<UUID>> inactiveByWeek = new HashMap<>();
@@ -89,13 +84,14 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
             activeByWeek.put(weekNumber, new HashSet<>());
             inactiveByWeek.put(weekNumber, new HashSet<>());
         }
-        
+
         for (ClassEntity classEntity : classes) {
             LocalDate classDate = classEntity.getClassDate();
             if (classDate.isAfter(now.minusWeeks(4)) && !classDate.isAfter(now)) {
                 int weekNumber = classDate.get(weekFields.weekOfWeekBasedYear());
                 if (activeByWeek.containsKey(weekNumber)) {
-                    List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classEntity.getId());
+                    List<ClassReservation> reservations = reservationRepository
+                            .findByClassEntityId(classEntity.getId());
                     for (ClassReservation reservation : reservations) {
                         if (Boolean.TRUE.equals(reservation.getAttended())) {
                             activeByWeek.get(weekNumber).add(reservation.getMemberId());
@@ -109,22 +105,22 @@ public class TrainerDashboardServiceImpl implements TrainerDashboardService {
         List<StudentTrendDTO> trends = new ArrayList<>();
         List<Integer> sortedWeeks = new ArrayList<>(activeByWeek.keySet());
         Collections.sort(sortedWeeks);
-        
+
         int weekIndex = 1;
         for (Integer weekNumber : sortedWeeks) {
             int active = activeByWeek.get(weekNumber).size();
             int inactive = inactiveByWeek.get(weekNumber).size();
-            
+
             trends.add(StudentTrendDTO.builder()
                     .week("Sem " + weekIndex)
                     .activeStudents(active)
                     .inactiveStudents(inactive)
                     .label("Semana " + weekIndex + ": " + active + " activos, " + inactive + " inactivos")
                     .build());
-            
+
             weekIndex++;
         }
-        
+
         return trends;
     }
 }

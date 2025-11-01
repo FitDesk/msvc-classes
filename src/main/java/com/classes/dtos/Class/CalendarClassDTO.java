@@ -28,10 +28,10 @@ public class CalendarClassDTO {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
     
-    private String schedule; // "08:00 - 09:00"
+    private String schedule;
     private String locationName;
     private int currentStudents;
     private int maxCapacity;
-    private String action; // "Reservar", "Lista de espera", "Llena"
+    private String action; 
     private String status; // "PROGRAMADA", "EN_PROCESO", "COMPLETADA", "CANCELADA"
 }

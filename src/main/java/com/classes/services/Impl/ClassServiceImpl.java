@@ -14,7 +14,6 @@ import com.classes.entities.LocationEntity;
 import com.classes.entities.TrainerEntity;
 import com.classes.enums.ReservationStatus;
 import com.classes.mappers.ClassMapper;
-import com.classes.mappers.ClassStatsMapper;
 import com.classes.repositories.ClassRepository;
 import com.classes.repositories.ClassReservationRepository;
 import com.classes.repositories.LocationRepository;
@@ -146,7 +145,7 @@ public class ClassServiceImpl implements ClassService {
                 .collect(Collectors.groupingBy(CalendarClassDTO::getClassDate));
         List<LocalDate> daysWithClasses = new ArrayList<>(classesByDate.keySet());
         Collections.sort(daysWithClasses);
-        String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL, new java.util.Locale("es", "ES"));
+        String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es-ES"));
         monthName = monthName.substring(0, 1).toUpperCase() + monthName.substring(1);
         return MonthlyCalendarDTO.builder()
                 .year(year)
@@ -294,15 +293,12 @@ public class ClassServiceImpl implements ClassService {
     public ClassDetailResponse getClassDetails(UUID classId) {
         log.info("Obteniendo detalles completos de la clase: {}", classId);
 
-        // 1. Obtener la clase
         ClassEntity classEntity = repository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada con ID: " + classId));
 
-        // 2. Obtener todas las reservas de esta clase
         List<ClassReservation> reservations = reservationRepository.findByClassEntityId(classId);
         log.info("Encontradas {} reservas para la clase", reservations.size());
 
-        // 3. Obtener IDs de los miembros
         List<UUID> memberIds = reservations.stream()
                 .map(ClassReservation::getMemberId)
                 .collect(Collectors.toList());
@@ -340,10 +336,10 @@ public class ClassServiceImpl implements ClassService {
                             .status(memberInfo.getStatus())
                             .membershipType(memberInfo.getMembershipType() != null ?
                                     memberInfo.getMembershipType().getType() : "Sin membresía")
-                            .attendanceStatus(attendanceStatusStr) // null = sin marcar aún
+                            .attendanceStatus(attendanceStatusStr) 
                             .checkInTime(reservation.getCheckInTime())
-                            .attendancePercentage(0.0) // TODO: Calcular desde historial
-                            .totalClasses(0) // TODO: Calcular desde historial
+                            .attendancePercentage(0.0) 
+                            .totalClasses(0)
                             .lastAccess(memberInfo.getLastAccess())
                             .build();
                 })
@@ -386,7 +382,6 @@ public class ClassServiceImpl implements ClassService {
             AttendanceStatus status = AttendanceStatus.valueOf(attendanceStatus.toUpperCase());
             reservation.setAttendanceStatus(status);
 
-            // Si marca como PRESENTE o TARDE, guardar la hora actual
             if (status == AttendanceStatus.PRESENTE || status == AttendanceStatus.TARDE) {
                 reservation.setCheckInTime(LocalDateTime.now());
                 reservation.setAttended(true);

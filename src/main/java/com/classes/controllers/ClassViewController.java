@@ -66,10 +66,7 @@ public class ClassViewController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) UUID locationId) {
-        
-        log.info("📅 Consultando clases para calendario entre {} y {} con filtros - Estado: {}, Ubicación: {}", 
-                startDate, endDate, status, locationId);
-        
+                
         List<CalendarClassDTO> classes = classStatsService.getClassesForCalendar(startDate, endDate, status, locationId);
         return ResponseEntity.ok(classes);
     }
@@ -92,7 +89,7 @@ public class ClassViewController {
     public ResponseEntity<MonthlyCalendarDTO> getMonthlyCalendar(
             @RequestParam int year,
             @RequestParam int month) {
-        log.info("📅 Consultando calendario mensual para {}/{}", month, year);
+        log.info("Consultando calendario mensual para {}/{}", month, year);
         MonthlyCalendarDTO calendar = classService.getMonthlyCalendar(year, month);
         return ResponseEntity.ok(calendar);
     }

@@ -28,7 +28,7 @@ public class DashboardController {
     @GetMapping("/member")
     public ResponseEntity<MemberDashboardDTO> getMemberDashboard(Authentication authentication) {
         UUID memberId = authorizationService.getUserId(authentication);
-        log.info("📊 Usuario {} consultando su dashboard", memberId);
+        log.info(" Usuario {} consultando su dashboard", memberId);
 
         MemberDashboardDTO dashboard = dashboardService.getDashboardForMember(memberId);
         return ResponseEntity.ok(dashboard);

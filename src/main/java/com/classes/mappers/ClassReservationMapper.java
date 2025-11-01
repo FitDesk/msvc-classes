@@ -14,8 +14,8 @@ import java.util.List;
 public interface ClassReservationMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "classEntity", ignore = true) // Service asigna la clase
-    @Mapping(target = "memberId", ignore = true) // Service asigna desde token
+    @Mapping(target = "classEntity", ignore = true) 
+    @Mapping(target = "memberId", ignore = true) 
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "reservedAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "attended", constant = "false")

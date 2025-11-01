@@ -15,10 +15,8 @@ public interface LocationMapper {
 
     LocationResponse toResponse(LocationEntity locationEntity);
 
-    // Request → Entity
     LocationEntity toEntity(LocationRequest locationRequest);
 
-    // Actualización parcial: Request → Entity
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromRequest(LocationRequest request, @MappingTarget LocationEntity entity);
 

@@ -18,21 +18,19 @@ public class StudentInClassDTO {
     private UUID reservationId;
     private String name;
     private String email;
-    private String avatarInitials; // Para mostrar iniciales en avatar
-    private String profileImageUrl; // URL de imagen de perfil
-    private String status; // "Activo", "Inactivo", "Suspendido"
-    private String membershipType; // "Mensual", "Anual", "Premium"
-    
-    // Campos de asistencia
-    private String attendanceStatus; // "PRESENTE", "AUSENTE", "TARDE", "JUSTIFICADO"
-    
+    private String avatarInitials;
+    private String profileImageUrl;
+    private String status;
+    private String membershipType;
+
+    private String attendanceStatus;
+
     @JsonFormat(pattern = "HH:mm")
-    private LocalDateTime checkInTime; // Hora de llegada (ej: "22:13")
-    
-    // Estadísticas del estudiante
-    private double attendancePercentage; // Porcentaje de asistencia
-    private int totalClasses; // Total de clases del estudiante
-    
+    private LocalDateTime checkInTime;
+
+    private double attendancePercentage;
+    private int totalClasses;
+
     @JsonFormat(pattern = "dd MMM yyyy")
     private LocalDateTime lastAccess;
 }
